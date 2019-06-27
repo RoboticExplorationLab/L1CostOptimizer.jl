@@ -2,9 +2,6 @@ using LinearAlgebra
 using PyPlot
 using TrajectoryOptimization
 using BenchmarkTools
-# using constrinat or not
-# using non linear dynamics or not
-# timing the code
 
 function define_parameters()
     N = 100
