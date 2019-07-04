@@ -1,13 +1,51 @@
 using PyPlot
 
+function save_history(T_full_history, X_full_history, U_full_history, filename, parameters)
+    num_iter = parameters["num_iter"]
+    N = parameters["N"]
+    n = parameters["n"]
+
+    XT = X_full_history[4,:]
+    YT = X_full_history[5,:]
+    XE = XT - X_full_history[1,:]
+    YE = YT - X_full_history[2,:]
+    plot_X = 2
+    plot_Y = 1
+    fig = figure(figsize=(3*plot_X,3*plot_Y))
+    subplot(plot_Y, plot_X, 1)
+    plot(XT, YT, color="red", linewidth=1.0, linestyle="-", label=L"target")
+    plot(XE, YE, color="blue", linewidth=1.0, linestyle="-", label=L"ego")
+    title(L"Trajectories")
+    grid("on")
+    xlabel(L"X")
+    ylabel(L"Y")
+    # axis("equal")
+    legend()
+
+    subplot(plot_Y, plot_X, 2)
+    plot(T_full_history, U_full_history[1,:], color="blue", linewidth=1.0, linestyle="-", label=L"u1")
+    plot(T_full_history, U_full_history[2,:], color="red", linewidth=1.0, linestyle="-", label=L"u2")
+    plot(T_full_history, U_full_history[3,:], color="green", linewidth=1.0, linestyle="-", label=L"u3")
+    title(L"Trajectories")
+    grid("on")
+    xlabel(L"Time in $s$")
+    ylabel(L"U")
+    legend()
+
+    tight_layout()
+    savefig("result/history/" * filename, format="png", dpi=300)
+    close()
+    return
+end
+
 function save_results(X_, U_, Y_, ν, cost_history, filename, parameters)
     num_iter = parameters["num_iter"]
     N = parameters["N"]
     n = parameters["n"]
-    Δt = parameters["Δt"]
+    Δt_rescaled = parameters["Δt"] * parameters["t_ref"]
 
     t_ref = parameters["t_ref"]
-    T = [Δt * i / t_ref for i=0:N-1]
+    T = [Δt_rescaled * i for i=0:N-1]
 
     # Rescaling
     if parameters["linearity"]
@@ -19,7 +57,6 @@ function save_results(X_, U_, Y_, ν, cost_history, filename, parameters)
         X[4:6,:] = X_[4:6,:] * v_ref
         U = U_ * u_ref
         Y = Y_ * u_ref
-        T *= t_ref
     elseif !parameters["linearity"]
         l_ego_ref = parameters["l_ego_ref"]
         l_target_ref = parameters["l_target_ref"]
@@ -27,7 +64,7 @@ function save_results(X_, U_, Y_, ν, cost_history, filename, parameters)
         v_target_ref = parameters["v_target_ref"]
         a_ego_ref = parameters["a_ego_ref"]
         a_target_ref = parameters["a_target_ref"]
-        u_ego_ref = parameters["u_ego_ref"]
+        u_ref = parameters["u_ref"]
         X = zero(X_)
         X[1:3,:] = X_[1:3,:] * l_ego_ref
         X[4:6,:] = X_[4:6,:] * l_target_ref
@@ -35,8 +72,8 @@ function save_results(X_, U_, Y_, ν, cost_history, filename, parameters)
         X[10:12,:] = X_[10:12,:] * v_target_ref
         U = U_ * u_ref
         Y = Y_ * u_ref
-        T *= t_ref
     end
+    println("**********X_final = ", X[:,end])
 
     plot_X = 3
     if parameters["complete_results"]
@@ -54,12 +91,6 @@ function save_results(X_, U_, Y_, ν, cost_history, filename, parameters)
         step(T, X[1,:], color="blue", linewidth=1.0, linestyle="-", label=L"$x_1$ ego")
         step(T, X[2,:], color="red", linewidth=1.0, linestyle="-", label=L"$x_2$ ego")
         step(T, X[3,:], color="green", linewidth=1.0, linestyle="-", label=L"$x_3$ ego")
-        # step(T, X[4,:]-X[1,:], color="blue", linewidth=1.0, linestyle="-", label=L"$x_1$ ego")
-        # step(T, X[5,:]-X[2,:], color="red", linewidth=1.0, linestyle="-", label=L"$x_2$ ego")
-        # step(T, X[6,:]-X[3,:], color="green", linewidth=1.0, linestyle="-", label=L"$x_3$ ego")
-        # step(T, X[4,:], color="blue", linewidth=2.0, linestyle="--", label=L"$x_1$ target")
-        # step(T, X[5,:], color="red", linewidth=2.0, linestyle="--", label=L"$x_2$ target")
-        # step(T, X[6,:], color="green", linewidth=2.0, linestyle="--", label=L"$x_3$ target")
     end
     title(L"Positions")
     grid("on")
@@ -76,12 +107,6 @@ function save_results(X_, U_, Y_, ν, cost_history, filename, parameters)
         step(T, X[7,:], color="blue", linewidth=1.0, linestyle="-", label=L"$\dot{x}_1$ ego")
         step(T, X[8,:], color="red", linewidth=1.0, linestyle="-", label=L"$\dot{x}_2$ ego")
         step(T, X[9,:], color="green", linewidth=1.0, linestyle="-", label=L"$\dot{x}_3$ ego")
-        # step(T, X[10,:]-X[7,:], color="blue", linewidth=1.0, linestyle="-", label=L"$\dot{x}_1$ ego")
-        # step(T, X[11,:]-X[8,:], color="red", linewidth=1.0, linestyle="-", label=L"$\dot{x}_2$ ego")
-        # step(T, X[12,:]-X[9,:], color="green", linewidth=1.0, linestyle="-", label=L"$\dot{x}_3$ ego")
-        # step(T, X[10,:], color="blue", linewidth=2.0, linestyle="--", label=L"$\dot{x}_1$ target")
-        # step(T, X[11,:], color="red", linewidth=2.0, linestyle="--", label=L"$\dot{x}_2$ target")
-        # step(T, X[12,:], color="green", linewidth=2.0, linestyle="--", label=L"$\dot{x}_3$ target")
     end
     title(L"Velocities")
     grid("on")
@@ -106,7 +131,7 @@ function save_results(X_, U_, Y_, ν, cost_history, filename, parameters)
         step(T[1:end-1], parameters["ρ"]*(U[3,:] - Y[3,:]), color="green", linewidth=1.0, linestyle="-", label=L"$y_3$")
         title(L"$\rho (U - Y)$")
         grid("on")
-        xlabel(L"Time in $s$")
+        xlabel(L"Iterations")
         # ylabel(L" ")
         legend()
 
@@ -142,6 +167,27 @@ function save_results(X_, U_, Y_, ν, cost_history, filename, parameters)
         xlabel(L"Time in $s$")
         ylabel(L"Cost")
         legend()
+
+        if parameters["linearity"]
+            subplot(plot_Y, plot_X, 8)
+            θ_dot = sqrt(parameters["μ"]/parameters["orbit_radius"]^3)
+            orbit_radius = parameters["orbit_radius"]
+            N = parameters["N"]
+            Δt_rescaled = parameters["Δt"] * parameters["t_ref"]
+            XT = [orbit_radius*cos(k*Δt_rescaled*θ_dot) for k=0:N-1]
+            YT = [orbit_radius*sin(k*Δt_rescaled*θ_dot) for k=0:N-1]
+            XE = XT .+ [X[2,k+1]*cos(k*Δt_rescaled*θ_dot) + X[1,k+1]*sin(k*Δt_rescaled*θ_dot) for k=0:N-1]
+            YE = YT .+ [X[2,k+1]*sin(k*Δt_rescaled*θ_dot) - X[1,k+1]*cos(k*Δt_rescaled*θ_dot) for k=0:N-1]
+            plot(XT, YT, color="blue", linewidth=1.0, linestyle="-", label=L"target")
+            plot(XE, YE, color="red", linewidth=1.0, linestyle="-", label=L"ego")
+            title(L"Trajectory X-Y")
+            grid("on")
+            xlabel(L"X")
+            ylabel(L"Y")
+            axis("equal")
+            legend()
+        end
+
     end
 
     tight_layout()

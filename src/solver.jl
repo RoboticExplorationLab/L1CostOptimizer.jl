@@ -1,11 +1,10 @@
 using TrajectoryOptimization
 
-function ADMM(parameters)
+function l1_solver(parameters)
     num_iter = parameters["num_iter"]
     N = parameters["N"]
     n = parameters["n"]
     m = parameters["m"]
-    Δt = parameters["Δt"]
     # History
     cost_history = zeros(num_iter, 3)
     constraint_violation = zeros(num_iter)
@@ -46,24 +45,22 @@ function ADMM(parameters)
     x0 = parameters["x0"]
     xf = parameters["xf"]
     tf = parameters["tf"]
-    u_ref = parameters["u_ref"]
-    # We use this scaling so that u_scaled = 1 with u Δt / m = l_ref / t_ref
-    scaled_u_min = parameters["u_min"] / u_ref
-    scaled_u_max = parameters["u_max"] / u_ref
-    println("scaled_u_min = ", scaled_u_min)
-    println("scaled_u_max = ", scaled_u_max)
-    bound_constraints = bound_constraint(n, m, u_min=scaled_u_min, u_max=scaled_u_max)
-    if parameters["linearity"]
+    # u_min = parameters["u_min"]*[1.0, 0.2, 1.0] ###
+    # u_max = parameters["u_max"]*[1.0, 0.2, 1.0] ###
+    # bound_constraints = bound_constraint(n, m, u_min=u_min, u_max=u_max)
+    bound_constraints = bound_constraint(n, m, u_min=parameters["u_min"], u_max=parameters["u_max"])
+    # if parameters["linearity"] && parameters["using_final_constraints"]
+    if parameters["using_final_constraints"]
         goal_constraints = goal_constraint(xf)
         problem_constraints = TrajectoryOptimization.ProblemConstraints([bound_constraints, goal_constraints], N)
-    elseif !parameters["linearity"]
+    else
         problem_constraints = TrajectoryOptimization.ProblemConstraints([bound_constraints], N)
     end
 
+    # println("x0 = ", x0)
     problem = Problem(model, objective, constraints=problem_constraints, x0=x0, N=N, tf=tf)
 
     initial_controls!(problem, parameters["U0"])
-    # println("problem.X = ", problem.X[1:10])
     # Solver initialization
     if parameters["using_constraints"]
         solver = AugmentedLagrangianSolver(problem)
@@ -72,18 +69,16 @@ function ADMM(parameters)
         solver = iLQRSolver(problem)
         solver.opts.iterations = parameters["ilqr_solver_iter"]
     end
-    # println("0X = ", problem.X[1:10])
 
     X = parameters["X0"]
     U = parameters["U0"]
     Y = parameters["Y0"]
     ν = parameters["ν0"]
     for i=1:num_iter
-        println("X = ", maximum(abs.(X), dims=2))
-        println("U = ", maximum(abs.(U), dims=2))
+        filename = "inter_" * "iter_" * string(i) * "_rho_" * string(parameters["ρ"]) * "_iter_" * string(parameters["num_iter"]) * "_Qf_" * string(parameters["Qf"][1,1]) * ".png"
         # Updates
-        # parameters["ρ"] *= 1.01
-        # println("0X = ", problem.X)
+        # parameters["ρ"] *= 1.05
+        # ν .*= 1.05
         X, U = dynamics_update(X, U, Y, ν, parameters, problem, solver)
         Y = soft_threshold_update(U, Y, ν, parameters)
         ν = dual_update(U, Y, ν, parameters)
@@ -96,7 +91,6 @@ function ADMM(parameters)
         uy = maximum(abs.(U .- Y))
         constraint_violation[i] = log(10, maximum(uy))
         println("uy, C, lqr C, augmented C = ", [uy, cost, lqr_cost, augmented_cost])
-        println("ρ = ", parameters["ρ"])
         println("i = ", i)
         if parameters["stage_plot"] && (i-1)%parameters["stage_plot_freq"] == 0
             filename = "lin_uncons_" * "rho_" * string(parameters["ρ"]) * "_iter_" * string(parameters["num_iter"]) * "_Qf_" * string(parameters["Qf"][1,1]) * "_stage_" * string(i) * ".png"
@@ -114,26 +108,21 @@ function dynamics_update(X, U, Y, ν, parameters, problem, solver)
     ρ = parameters["ρ"]
     # TVcost update
     TVr = ν - ρ * Y
-    # println("ν = ", ν)
-    # println("ρ = ", ρ)
-    # println("Y = ", Y)
-    # println("TVr = ", TVr)
-    # println("obj = ", problem.obj)
-    # println("X = ", problem.X)
-    # println("U = ", problem.U)
-    # println("cost = ", cost(problem.obj, problem.X, problem.U))
-    for  k=1:N-1
+
+    for k=1:N-1
         problem.obj.cost[k].R = ρ * Matrix{Float64}(I, m, m)
         problem.obj.cost[k].r = TVr[:,k]
     end
 
-    println("cost = ", cost(problem.obj, problem.X, problem.U))
+    # println("cost = ", cost(problem.obj, problem.X, problem.U))
 
     # Initial control update
     initial_controls!(problem, U)
-    # println("1X = ", problem.X[1:10])
-    # println("1U = ", problem.U)
     # Solving the problem
+    rollout!(problem)
+    J_prev = cost(problem.obj, problem.X, problem.U)
+    # println("problem.X = ", problem.X)
+    println("J_prev = ", J_prev)
     solve!(problem, solver)
 
     X = to_array(problem.X)
@@ -147,9 +136,17 @@ function soft_threshold_update(U, Y, ν, parameters)
     ρ = parameters["ρ"]
     # println("α/ρ", α/ρ)
     for i=1:N-1
-        Y[:,i] = soft_threshold(α/ρ, U[:,i] + ν[:,i]/ρ)
+        Y[:,i] = soft_threshold(α/ρ, U[:,i] + ν[:,i]/ρ) ###
+        # x = U[:,i] + ν[:,i]/ρ
+        # Y[:,i] = prox_op_l2(2*α/ρ, U[:,i] + ν[:,i]/ρ)
+        # Y[:,i] = prox_op_l1(α/ρ, U[:,i] + ν[:,i]/ρ)
     end
     return Y
+end
+
+function prox_op_l2(β, x)
+    out = x * (1 - β / max(norm(x, 2), β))
+    return out
 end
 
 function soft_threshold(τ, y)
