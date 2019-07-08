@@ -75,26 +75,30 @@ function l1_solver(parameters)
     Y = parameters["Y0"]
     ν = parameters["ν0"]
     for i=1:num_iter
-        filename = "inter_" * "iter_" * string(i) * "_rho_" * string(parameters["ρ"]) * "_iter_" * string(parameters["num_iter"]) * "_Qf_" * string(parameters["Qf"][1,1]) * ".png"
+        # println("i = ", i)
         # Updates
-        # parameters["ρ"] *= 1.05
-        # ν .*= 1.05
+        parameters["scale_y"] = 1 + 0.97*(parameters["scale_y"] - 1)
+        # println("Y[2, :] = ", Y[2,1:50])
+        # println("U[2, :] = ", U[2,1:50])
         X, U = dynamics_update(X, U, Y, ν, parameters, problem, solver)
         Y = soft_threshold_update(U, Y, ν, parameters)
-        ν = dual_update(U, Y, ν, parameters)
-        # Costs computations
-        cost = cost_function(X, U, parameters)
-        lqr_cost = lqr_cost_function(X, U, Y, ν, parameters)
-        augmented_cost = augmented_lagrangian(X, U, Y, ν, parameters)
-        cost_history[i, :] = [cost, lqr_cost, augmented_cost]
-        #Constraint violation
-        uy = maximum(abs.(U .- Y))
-        constraint_violation[i] = log(10, maximum(uy))
-        println("uy, C, lqr C, augmented C = ", [uy, cost, lqr_cost, augmented_cost])
-        println("i = ", i)
-        if parameters["stage_plot"] && (i-1)%parameters["stage_plot_freq"] == 0
-            filename = "lin_uncons_" * "rho_" * string(parameters["ρ"]) * "_iter_" * string(parameters["num_iter"]) * "_Qf_" * string(parameters["Qf"][1,1]) * "_stage_" * string(i) * ".png"
-            save_results(X, U, Y, ν, cost_history, filename, parameters)
+        # ν = 0.9*dual_update(U, Y, ν, parameters) ###
+        # ν = 0.9*dual_update(U, Y, ν, parameters) .- parameters["ρ"] .* maximum(Y, dims=2) .* 0.15 ###
+        ν = dual_update(U, Y, ν, parameters) ###
+        if !parameters["timing"]
+            # Costs computations
+            cost = cost_function(X, U, parameters)
+            lqr_cost = lqr_cost_function(X, U, Y, ν, parameters)
+            augmented_cost = augmented_lagrangian(X, U, Y, ν, parameters)
+            cost_history[i, :] = [cost, lqr_cost, augmented_cost]
+            #Constraint violation
+            uy = maximum(abs.(U .- Y))
+            constraint_violation[i] = log(10, maximum(uy))
+            println("uy, C, lqr C, augmented C = ", [uy, cost, lqr_cost, augmented_cost])
+            if parameters["stage_plot"] && (i-1)%parameters["stage_plot_freq"] == 0
+                filename = "inter_" * "rho_" * string(parameters["ρ"]) * "_iter_" * string(parameters["num_iter"]) * "_Qf_" * string(parameters["Qf"][1,1]) * "_stage_" * string(i)
+                save_results(X, U, Y, ν, cost_history, filename, parameters)
+            end
         end
     end
     return X, U, Y, ν, cost_history, constraint_violation
@@ -113,18 +117,13 @@ function dynamics_update(X, U, Y, ν, parameters, problem, solver)
         problem.obj.cost[k].R = ρ * Matrix{Float64}(I, m, m)
         problem.obj.cost[k].r = TVr[:,k]
     end
-
     # println("cost = ", cost(problem.obj, problem.X, problem.U))
-
     # Initial control update
     initial_controls!(problem, U)
     # Solving the problem
-    rollout!(problem)
-    J_prev = cost(problem.obj, problem.X, problem.U)
-    # println("problem.X = ", problem.X)
-    println("J_prev = ", J_prev)
+    # println("*********************lag = ", solver.λ[1])
+    # solver.μ .= [PartedArrays.PartedVector(zero(solver.μ[k]), solver.C[k].parts) for k=1:N]
     solve!(problem, solver)
-
     X = to_array(problem.X)
     U = to_array(problem.U)
     return X, U
@@ -136,6 +135,9 @@ function soft_threshold_update(U, Y, ν, parameters)
     ρ = parameters["ρ"]
     # println("α/ρ", α/ρ)
     for i=1:N-1
+        m = parameters["m"]
+        # U_corr = soft_threshold(0.03, U[:,i])
+        # Y[:,i] = parameters["scale_y"]*soft_threshold(α/ρ, U[:,i] + ν[:,i]/ρ) ###
         Y[:,i] = soft_threshold(α/ρ, U[:,i] + ν[:,i]/ρ) ###
         # x = U[:,i] + ν[:,i]/ρ
         # Y[:,i] = prox_op_l2(2*α/ρ, U[:,i] + ν[:,i]/ρ)
@@ -156,6 +158,120 @@ end
 
 function dual_update(U, Y, ν, parameters)
     ρ = parameters["ρ"]
-    ν += ρ * (U .- Y)
+    # ν += ρ * (U .- 1.0/parameters["scale_y"]*Y) ###
+    ν += ρ * (U .- Y) ###
     return ν
+end
+
+
+
+function accelerated_l1_solver(parameters)
+    num_iter = parameters["num_iter"]
+    N = parameters["N"]
+    n = parameters["n"]
+    m = parameters["m"]
+    # History
+    cost_history = zeros(num_iter, 3)
+    constraint_violation = zeros(num_iter)
+    # Model initialization
+    if parameters["linearity"]
+        model = TrajectoryOptimization.Model(scaled_cw_dynamics!, n, m)
+    elseif !parameters["linearity"]
+        model = TrajectoryOptimization.Model(scaled_non_linear_dynamics!, n, m)
+    end
+    # TVcost initialization
+    ρ = parameters["ρ"]
+    R = ρ * Matrix{Float64}(I, m, m)
+    ν = parameters["ν0"]
+    Y = parameters["Y0"]
+    ###
+    A = zeros(num_iter+2)
+    ν_hat = copy(ν)
+    Y_hat = copy(Y)
+    ###
+    TVr = ν_hat - ρ * Y_hat
+    TVcost = [TrajectoryOptimization.QuadraticCost(
+                                        parameters["Q"],
+                                        R,
+                                        parameters["H"],
+                                        parameters["q"],
+                                        TVr[:,k],
+                                        parameters["c"],
+                                        parameters["Qf"],
+                                        parameters["qf"],
+                                        parameters["cf"]) for k=1:N-1]
+    final_cost = QuadraticCost(
+                    parameters["Q"],
+                    parameters["R"],
+                    parameters["H"],
+                    parameters["q"],
+                    parameters["r"],
+                    parameters["c"],
+                    parameters["Qf"],
+                    parameters["qf"],
+                    parameters["cf"])
+    objective = TrajectoryOptimization.Objective([TVcost...,final_cost])
+    # Problem initialization
+    x0 = parameters["x0"]
+    xf = parameters["xf"]
+    tf = parameters["tf"]
+    # u_min = parameters["u_min"]*[1.0, 0.2, 1.0] ###
+    # u_max = parameters["u_max"]*[1.0, 0.2, 1.0] ###
+    # bound_constraints = bound_constraint(n, m, u_min=u_min, u_max=u_max)
+    bound_constraints = bound_constraint(n, m, u_min=parameters["u_min"], u_max=parameters["u_max"])
+    # if parameters["linearity"] && parameters["using_final_constraints"]
+    if parameters["using_final_constraints"]
+        goal_constraints = goal_constraint(xf)
+        problem_constraints = TrajectoryOptimization.ProblemConstraints([bound_constraints, goal_constraints], N)
+    else
+        problem_constraints = TrajectoryOptimization.ProblemConstraints([bound_constraints], N)
+    end
+
+    # println("x0 = ", x0)
+    problem = Problem(model, objective, constraints=problem_constraints, x0=x0, N=N, tf=tf)
+
+    initial_controls!(problem, parameters["U0"])
+    # Solver initialization
+    if parameters["using_constraints"]
+        solver = AugmentedLagrangianSolver(problem)
+        solver.opts.iterations = parameters["al_solver_iter"]
+    else
+        solver = iLQRSolver(problem)
+        solver.opts.iterations = parameters["ilqr_solver_iter"]
+    end
+
+    X = parameters["X0"]
+    X_hat = copy(X)
+    U = parameters["U0"]
+    U_hat = copy(U)
+    Y = parameters["Y0"]
+    Y_hat = copy(Y)
+    ν = parameters["ν0"]
+    ν_hat = copy(ν)
+    for i=1:num_iter
+        # println("i = ", i)
+        # Updates
+        X, U = dynamics_update(X, U, Y_hat, ν_hat, parameters, problem, solver)
+        Y = soft_threshold_update(U, Y, ν_hat, parameters)
+        ν = dual_update(U, Y, ν_hat, parameters) ###
+        A[i+2] = (1+sqrt(1+4*A[i+1])) / 2
+        ν_hat = dual_hat_update(ν, A, parameters)
+        Y_hat = Y_hat_update(Y, ν_hat, parameters)
+        if !parameters["timing"]
+            # Costs computations
+            cost = cost_function(X, U, parameters)
+            lqr_cost = lqr_cost_function(X, U, Y, ν, parameters)
+            augmented_cost = augmented_lagrangian(X, U, Y, ν, parameters)
+            cost_history[i, :] = [cost, lqr_cost, augmented_cost]
+            #Constraint violation
+            uy = maximum(abs.(U .- Y))
+            constraint_violation[i] = log(10, maximum(uy))
+            println("uy, C, lqr C, augmented C = ", [uy, cost, lqr_cost, augmented_cost])
+            if parameters["stage_plot"] && (i-1)%parameters["stage_plot_freq"] == 0
+                filename = "inter_" * "rho_" * string(parameters["ρ"]) * "_iter_" * string(parameters["num_iter"]) * "_Qf_" * string(parameters["Qf"][1,1]) * "_stage_" * string(i)
+                save_results(X, U, Y, ν, cost_history, filename, parameters)
+            end
+        end
+    end
+    return X, U, Y, ν, cost_history, constraint_violation
 end
