@@ -2,8 +2,11 @@ function cw_dynamics!(ẋ, x, u, parameters)
     m_ego = parameters["m_ego"]
     n_ = sqrt(parameters["μ"]/parameters["orbit_radius"]^3)
     ẋ[1:3] = x[4:6]
-    ẋ[4] = 3*n_^2*x[1] + 2*n_*x[5] + u[1]/m_ego
-    ẋ[5] = -2*n_*x[4] + u[2]/m_ego
+    # ẋ[4] = 3*n_^2*x[1] + 2*n_*x[5] + u[1]/m_ego
+    # ẋ[5] = -2*n_*x[4] + u[2]/m_ego
+    # ẋ[6] = -n_^2*x[3] + u[3]/m_ego
+    ẋ[4] =  2*n_*x[5] + u[1]/m_ego
+    ẋ[5] = -2*n_*x[4] + 3*n_^2*x[2] + u[2]/m_ego
     ẋ[6] = -n_^2*x[3] + u[3]/m_ego
 end
 
@@ -16,10 +19,14 @@ function scaled_cw_dynamics!(ẋ, x, u, parameters)
     l_ref = parameters["l_ref"]
     n_ = sqrt(parameters["μ"]/parameters["orbit_radius"]^3) * t_ref
     ẋ[1:3] = x[4:6]
-    ẋ[4] = 3*n_^2*x[1] + 2*n_*x[5] + u[1]
-    ẋ[5] = -2*n_*x[4] + u[2]
+    # ẋ[4] = 3*n_^2*x[1] + 2*n_*x[5] + u[1]
+    # ẋ[5] = -2*n_*x[4] + u[2]
+    # ẋ[6] = -n_^2*x[3] + u[3]
+    ẋ[4] = 2*n_*x[5] + u[1]
+    ẋ[5] = -2*n_*x[4] + 3*n_^2*x[2]+ u[2]
     ẋ[6] = -n_^2*x[3] + u[3]
 end
+
 function scaled_cw_dynamics!(ẋ,x,u)
     scaled_cw_dynamics!(ẋ, x, u, lin_parameters)
 end
@@ -60,8 +67,16 @@ function scaled_non_linear_dynamics!(ẋ, x, u, parameters)
     rd_ego = x[10:12] * v_target_ref - x[7:9] * v_ego_ref # unscaled
     r_target = x[4:6] * l_target_ref
     rd_target = x[10:12] * v_target_ref
-    F_ego = u * u_ref + gravitation_force(r_ego, "ego", parameters) + drag_force(r_ego, rd_ego, "ego", parameters) # unscaled
-    F_target = gravitation_force(r_target, "target", parameters) + drag_force(r_target, rd_target, "target", parameters) # unscaled
+    # The control that we give is expressed in the CW frame (without the translation).
+    # We need to convert it to the world frame before applying it to the dynamics.
+    # here x_cw is the vector X of the CW frame expressed in the world frame.
+    y_cw = r_target / norm(r_target)
+    z_cw = cross(y_cw, rd_target)
+    z_cw = z_cw / norm(z_cw)
+    x_cw = cross(y_cw, z_cw)
+    u_world = [x_cw y_cw z_cw]*u
+    F_ego = u_world * u_ref + gravitation_force(r_ego, "ego", parameters) ###+ drag_force(r_ego, rd_ego, "ego", parameters) # unscaled
+    F_target = gravitation_force(r_target, "target", parameters) ###+ drag_force(r_target, rd_target, "target", parameters) # unscaled
     ẋ[10:12] = F_target / parameters["m_target"] / a_target_ref # scaled
     ẋ[7:9] = (F_target / parameters["m_target"] - F_ego / parameters["m_ego"]) / a_ego_ref # scaled
 end
@@ -92,13 +107,22 @@ function non_linear_dynamics!(ẋ, x, u, parameters)
     # rdd_ego = Γ(O_ego, S_ego/0) = F(->ego) / m_ego
     # rdd_target = acceleration vector of the target satellite in the inertial frame.
     # rdd_target = Γ(O_target, S_target/0) = F(->target) / m_target
+
     ẋ[1:6] = x[7:12]
     r_ego = x[4:6] - x[1:3]
     rd_ego = x[10:12] - x[7:9]
     r_target = x[4:6]
     rd_target = x[10:12]
-    F_ego = u + gravitation_force(r_ego, "ego", parameters) + drag_force(r_ego, rd_ego, "ego", parameters)
-    F_target = gravitation_force(r_target, "target", parameters) + drag_force(r_target, rd_target, "target", parameters)
+    # The control that we give is expressed in the CW frame (without the translation).
+    # We need to convert it to the world frame before applying it to the dynamics.
+    # here x_cw is the vector X of the CW frame expressed in the world frame.
+    y_cw = r_target / norm(r_target)
+    z_cw = cross(y_cw, rd_target)
+    z_cw = z_cw / norm(z_cw)
+    x_cw = cross(y_cw, z_cw)
+    u_world = [x_cw y_cw z_cw]*u
+    F_ego = u_world + gravitation_force(r_ego, "ego", parameters) ###+ drag_force(r_ego, rd_ego, "ego", parameters)
+    F_target = gravitation_force(r_target, "target", parameters) ###+ drag_force(r_target, rd_target, "target", parameters)
     ẋ[10:12] = F_target / parameters["m_target"]
     ẋ[7:9] = ẋ[10:12] - F_ego / parameters["m_ego"]
 end
@@ -107,42 +131,42 @@ function non_linear_dynamics!(ẋ,x,u)
     non_linear_dynamics!(ẋ, x, u, non_lin_parameters)
 end
 
-function circular_dynamics!(ẋ, x, u, parameters)
-    # Definition of the state
-    # x = [r_target-r_ego, r_target, rd_target-rd_ego, rd_target] ∈ R^12
-    # r_ego = position vector of the ego satellite in the inertial frame.
-    # r_ego = \vec{O_0 O_ego}
-    # rd_ego = velocity vector of the ego satellite in the inertial frame.
-    # rd_ego = V(O_ego, S_ego/0)
-    # r_target = position vector of the target satellite in the inertial frame.
-    # r_target = \vec{O_0 O_target}
-    # rd_target = velocity vector of the target satellite in the inertial frame.
-    # rd_target = V(O_target, S_target/0)
-
-    # Definition of the control
-    # u = [Fcx, Fcy, Fcz] \in R^3
-    # Fc is the force applied by the control system of the ego satellite expressed in the inertial frame.
-
-    # Defintion of the state derivative
-    # ẋ = [rd_target-rd_ego, rd_target, rdd_target-rdd_ego, rdd_target] ∈ R^12
-    # rdd_ego = acceleration vector of the ego satellite in the inertial frame.
-    # rdd_ego = Γ(O_ego, S_ego/0) = F(->ego) / m_ego
-    # rdd_target = acceleration vector of the target satellite in the inertial frame.
-    # rdd_target = Γ(O_target, S_target/0) = F(->target) / m_target
-    ẋ[1:6] = x[7:12]
-    r_ego = x[4:6] - x[1:3]
-    rd_ego = x[10:12] - x[7:9]
-    r_target = x[4:6]
-    rd_target = x[10:12]
-    F_ego = u + gravitation_force(r_ego, "ego", parameters)  ### we shouldn't use J2
-    F_target = gravitation_force(r_target, "target", parameters) ### we shouldn't use J2
-    ẋ[10:12] = F_target / parameters["m_target"]
-    ẋ[7:9] = ẋ[10:12] - F_ego / parameters["m_ego"]
-end
-
-function circular_dynamics!(ẋ,x,u)
-    circular_dynamics!(ẋ, x, u, non_lin_parameters)
-end
+# function circular_dynamics!(ẋ, x, u, parameters)
+#     # Definition of the state
+#     # x = [r_target-r_ego, r_target, rd_target-rd_ego, rd_target] ∈ R^12
+#     # r_ego = position vector of the ego satellite in the inertial frame.
+#     # r_ego = \vec{O_0 O_ego}
+#     # rd_ego = velocity vector of the ego satellite in the inertial frame.
+#     # rd_ego = V(O_ego, S_ego/0)
+#     # r_target = position vector of the target satellite in the inertial frame.
+#     # r_target = \vec{O_0 O_target}
+#     # rd_target = velocity vector of the target satellite in the inertial frame.
+#     # rd_target = V(O_target, S_target/0)
+#
+#     # Definition of the control
+#     # u = [Fcx, Fcy, Fcz] \in R^3
+#     # Fc is the force applied by the control system of the ego satellite expressed in the inertial frame.
+#
+#     # Defintion of the state derivative
+#     # ẋ = [rd_target-rd_ego, rd_target, rdd_target-rdd_ego, rdd_target] ∈ R^12
+#     # rdd_ego = acceleration vector of the ego satellite in the inertial frame.
+#     # rdd_ego = Γ(O_ego, S_ego/0) = F(->ego) / m_ego
+#     # rdd_target = acceleration vector of the target satellite in the inertial frame.
+#     # rdd_target = Γ(O_target, S_target/0) = F(->target) / m_target
+#     ẋ[1:6] = x[7:12]
+#     r_ego = x[4:6] - x[1:3]
+#     rd_ego = x[10:12] - x[7:9]
+#     r_target = x[4:6]
+#     rd_target = x[10:12]
+#     F_ego = u + gravitation_force(r_ego, "ego", parameters)  ### we shouldn't use J2
+#     F_target = gravitation_force(r_target, "target", parameters) ### we shouldn't use J2
+#     ẋ[10:12] = F_target / parameters["m_target"]
+#     ẋ[7:9] = ẋ[10:12] - F_ego / parameters["m_ego"]
+# end
+#
+# function circular_dynamics!(ẋ,x,u)
+#     circular_dynamics!(ẋ, x, u, non_lin_parameters)
+# end
 
 function gravitation_force(r, id, parameters)
     μ = parameters["μ"]
@@ -156,7 +180,7 @@ function gravitation_force(r, id, parameters)
     F_0 = - μ * mass / rmag^3 * r
     J2_term = [r[1]*(6*r[3]^2 - 3/2(r[1]^2 + r[2]^2)), r[2]*(6*r[3]^2 - 3/2(r[1]^2 + r[2]^2)), r[3]*(3*r[3]^2 - 9/2(r[1]^2 + r[2]^2))]
     F_J2 = J2 / rmag^7 * J2_term
-    F = F_0 + F_J2
+    F = F_0 ###+ F_J2
     return F
 end
 

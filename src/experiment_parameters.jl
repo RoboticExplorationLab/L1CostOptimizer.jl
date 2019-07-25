@@ -29,7 +29,7 @@ function define_lin_constrained_parameters()
                   "Δt" => Δt, # time step
                   "tf" => tf, # final time
                   "N_drift" => 10000, # drifting nodes
-                  "tf_drift" => 12*60*60, # drifting time
+                  "tf_drift" => 12*60, # drifting time
                   "x0_drift" => x0_drift, # drifting time
                   "ρ" => 1e0, # weighting parameter for augmented lagrangian
                   "α" => 1.0, # weighting parameter
@@ -46,11 +46,11 @@ function define_lin_constrained_parameters()
                   "u_ref" => 1.0, # reference control for ego
                   "using_constraints" => true, # using constraints on control
                   "using_final_constraints" => true, # using constraints on control
-                  "complete_results" => false, # using constraints on control
+                  "complete_results" => true, # using constraints on control
                   "stage_plot" => false, # using constraints on control
                   "stage_plot_freq" => 5, # using constraints on control
                   "plot_format" => "eps", # using constraints on control
-                  "timing" => true, # timing the function
+                  "timing" => false, # timing the function
                   "linearity" => true, # using linear dynamics
                   "u_min" => -2e-1, # lower bound on u
                   "u_max" => 2e-1, # upper bound on u
@@ -92,7 +92,7 @@ function define_lin_unconstrained_parameters()
     # mass
     m_ego = 4.6
 
-    parameters = Dict("num_iter" => 120, # number of iteration of ADMM
+    parameters = Dict("num_iter" => 600,#120, # number of iteration of ADMM
                   "ilqr_solver_iter" => 1, # number of iterations of the inner solver (ilqr = unconstrained)
                   "al_solver_iter" => 100, # number of iterations of the inner solver (al = constrained)
                   "scale_y" => 1.1, # helpful parameter for fast convergence
@@ -102,7 +102,7 @@ function define_lin_unconstrained_parameters()
                   "Δt" => Δt, # time step
                   "tf" => tf, # final time
                   "N_drift" => 10000, # drifting nodes
-                  "tf_drift" => 12*60*60, # drifting time
+                  "tf_drift" => 12*60, # drifting time
                   "x0_drift" => x0_drift, # drifting time
                   "ρ" => 1e-1, # weighting parameter for augmented lagrangian
                   "α" => 1.0, # weighting parameter
@@ -118,10 +118,10 @@ function define_lin_unconstrained_parameters()
                   "a_ref" => 1.0, # reference acceleration for delta ego target
                   "u_ref" => 1.0, # reference control for ego
                   "using_constraints" => false, # using constraints on control
-                  "using_final_constraints" => false, # using constraints on control
-                  "complete_results" => false, # using constraints on control
-                  "stage_plot" => false, # using constraints on control
-                  "stage_plot_freq" => 5, # using constraints on control
+                  "using_final_constraints" => false, # using constraints on control /!\ cannot be enforced using ILQR
+                  "complete_results" => true, # using constraints on control
+                  "stage_plot" => true, # using constraints on control
+                  "stage_plot_freq" => 100, # using constraints on control
                   "plot_format" => "eps", # using constraints on control
                   "timing" => false, # timing the function
                   "linearity" => true, # using linear dynamics
@@ -133,7 +133,7 @@ function define_lin_unconstrained_parameters()
                   "q" => zeros(n), # Linear term on states (n,)
                   "r" => zeros(m), # Linear term on controls (m,)
                   "c" => 0.0, # constant term
-                  "Qf" => 10.0 * Matrix{Float64}(I, n, n), # Quadratic final cost for terminal state (n,n)
+                  "Qf" => 100.0 * Matrix{Float64}(I, n, n), # Quadratic final cost for terminal state (n,n)
                   "qf" => zeros(n), # Linear term on terminal state (n,)
                   "cf" => 0.0, # constant term (terminal)
                   "μ" => μ, # Standard gravitational parameter m^3 s^-2
@@ -163,7 +163,7 @@ function define_non_lin_unconstrained_parameters()
 
     x0 = [[0, -100, 0]; r0; zeros(3); v0]
     xf = zeros(n) # ### we need to get rid of penalty on x4,5,6 and x10,11,12
-    Qf = 100 .* Diagonal([ones(3); zeros(3); ones(3); zeros(3)])
+    Qf = 100 .* Array(Diagonal([ones(3); zeros(3); ones(3); zeros(3)]))
 
     # mass
     m_ego = 4.6 # kg
@@ -179,7 +179,7 @@ function define_non_lin_unconstrained_parameters()
                   "Δt" => Δt, # time step
                   "tf" => tf, # final time
                   "N_drift" => 10000, # drifting nodes
-                  "tf_drift" => 12*60*60, # drifting time
+                  "tf_drift" => 12*60, # drifting time
                   "x0_drift" => x0_drift, # drifting time
                   "ρ" => 1e-1, # weighting parameter for augmented lagrangian
                   "α" => 1.0, # weighting parameter
@@ -199,9 +199,9 @@ function define_non_lin_unconstrained_parameters()
                   "u_ref" => 1.0, # reference control for ego
                   "using_constraints" => false, # using constraints on control
                   "using_final_constraints" => false, # using constraints on control
-                  "complete_results" => false, # using constraints on control
-                  "stage_plot" => false, # using constraints on control
-                  "stage_plot_freq" => 5, # using constraints on control
+                  "complete_results" => true, # using constraints on control
+                  "stage_plot" => true, # using constraints on control
+                  "stage_plot_freq" => 50, # using constraints on control
                   "plot_format" => "eps", # using constraints on control
                   "timing" => false, # timing the function
                   "linearity" => false, # using non linear dynamics
@@ -253,8 +253,8 @@ function define_non_lin_constrained_parameters()
     # xf = [0.0, 0.0, 0.0, -1.54994e6, -7.06293e6, 0.0, 0.0, 0.0, 0.0, 7255.61, -1592.23, 0.0] #10000 sec
     # xf = [0.0, 0.0, 0.0, -6.74266e6, -2.61225e6, 0.0, 0.0, 0.0, 0.0, 2683.52, -6926.6, 0.0] #3000 sec
 
-    # Qf = 1 .* Diagonal([ones(3); zeros(3); ones(3); zeros(3)])
-    Qf = 0.1 .* Diagonal(ones(12))
+    # Qf = 1 .* Array(Diagonal([ones(3); zeros(3); ones(3); zeros(3)]))
+    Qf = 0.1 .* Array(Diagonal(ones(12)))
 
     # mass
     m_ego = 4.6 # kg
@@ -272,7 +272,7 @@ function define_non_lin_constrained_parameters()
                   "Δt" => Δt, # time step
                   "tf" => tf, # final time
                   "N_drift" => 10000, # drifting nodes
-                  "tf_drift" => 12*60*60, # drifting time
+                  "tf_drift" => 12*60, # drifting time
                   "x0_drift" => x0_drift, # drifting time
                   "ρ" => 1e0, # weighting parameter for augmented lagrangian
                   "α" => 1e0, # weighting parameter
@@ -326,22 +326,25 @@ end
 
 function lin_cons_example(ρ)
     lin_cons_parameters = define_lin_constrained_parameters()
-    non_lin_parameters = define_non_lin_parameters()
+
+
+    # non_lin_parameters = define_non_lin_parameters()
     lin_cons_parameters["ρ"] = ρ
 
     # Define initial state
-    non_lin_parameters["x0"] = lin_cons_parameters["x0_drift"]
-    println("x0 = ", non_lin_parameters["x0"])
+    # non_lin_parameters["x0"] = lin_cons_parameters["x0_drift"]
+    # println("x0 = ", non_lin_parameters["x0"])
 
     # Propagate the non linear dynamics forward without control
     tf_drift = lin_cons_parameters["tf_drift"]
     N_drift = lin_cons_parameters["N_drift"]
-    X_history = drifting_simulation(N_drift, tf_drift, non_lin_parameters)
+    x0 = lin_cons_parameters["x0_drift"]
+    X_history = drifting_simulation(N_drift, tf_drift, x0)
     U_history = zeros(3, N_drift)
     T_history = [k*tf_drift/(N_drift-1) for k=0:N_drift-1]
 
-    filename = "history_after_drift_" * "tf_" * string(tf_drift) * "_N_" * string(N_drift) * ".png"
-    save_history(T_history, X_history, U_history, filename, non_lin_parameters)
+    # filename = "history_after_drift_" * "tf_" * string(tf_drift) * "_N_" * string(N_drift) * ".png"
+    # save_history(T_history, X_history, U_history, filename, non_lin_parameters)
 
     x0_full = X_history[:,N_drift]
     # We recover from the initial drift using a open loop controller reyling on the linear dynamics model.
@@ -356,30 +359,31 @@ function lin_cons_example(ρ)
     println("lin_cons_parameters[x0] = ", lin_cons_parameters["x0"])
 
     # Compute the control sequence
-    X, U, Y, ν, cost_history, constraint_violation = l1_solver(lin_cons_parameters)
+    X, U, Y, ν, cost_history, constraint_violation, optimality_criterion = l1_solver(lin_cons_parameters)
     filename = "lin_cons_" * "_rho_" * string(lin_cons_parameters["ρ"])
     filename *= "_iter_" * string(lin_cons_parameters["num_iter"]) * "_Qf_" * string(lin_cons_parameters["Qf"][1,1])
-    save_results(X, U, Y, ν, cost_history, filename, lin_cons_parameters)
+    save_results(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, lin_cons_parameters)
 end
 
 function lin_uncons_example(ρ)
     lin_uncons_parameters = define_lin_unconstrained_parameters()
-    non_lin_parameters = define_non_lin_parameters()
+    # non_lin_parameters = define_non_lin_parameters()
     lin_uncons_parameters["ρ"] = ρ
 
     # Define initial state
-    non_lin_parameters["x0"] = lin_uncons_parameters["x0_drift"]
-    println("x0 = ", non_lin_parameters["x0"])
+    # non_lin_parameters["x0"] = lin_uncons_parameters["x0_drift"]
+    # println("x0 = ", non_lin_parameters["x0"])
 
     # Propagate the non linear dynamics forward without control
     tf_drift = lin_uncons_parameters["tf_drift"]
     N_drift = lin_uncons_parameters["N_drift"]
-    X_history = drifting_simulation(N_drift, tf_drift, non_lin_parameters)
+    x0 = lin_uncons_parameters["x0_drift"]
+    X_history = drifting_simulation(N_drift, tf_drift, x0)
     U_history = zeros(3, N_drift)
     T_history = [k*tf_drift/(N_drift-1) for k=0:N_drift-1]
 
-    filename = "history_after_drift_" * "tf_" * string(tf_drift) * "_N_" * string(N_drift) * ".png"
-    save_history(T_history, X_history, U_history, filename, non_lin_parameters)
+    # filename = "history_after_drift_" * "tf_" * string(tf_drift) * "_N_" * string(N_drift) * ".png"
+    # save_history(T_history, X_history, U_history, filename, non_lin_parameters)
 
     x0_full = X_history[:,N_drift]
     # We recover from the initial drift using a open loop controller reyling on the linear dynamics model.
@@ -394,10 +398,10 @@ function lin_uncons_example(ρ)
     println("lin_uncons_parameters[x0] = ", lin_uncons_parameters["x0"])
 
     # Compute the control sequence
-    X, U, Y, ν, cost_history, constraint_violation = l1_solver(lin_uncons_parameters)
+    X, U, Y, ν, cost_history, constraint_violation, optimality_criterion = l1_solver(lin_uncons_parameters)
     filename = "lin_uncons_" * "_rho_" * string(lin_uncons_parameters["ρ"])
     filename *= "_iter_" * string(lin_uncons_parameters["num_iter"]) * "_Qf_" * string(lin_uncons_parameters["Qf"][1,1])
-    save_results(X, U, Y, ν, cost_history, filename, lin_uncons_parameters)
+    save_results(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, lin_uncons_parameters)
 end
 
 function non_lin_uncons_example(ρ)
@@ -410,27 +414,28 @@ function non_lin_uncons_example(ρ)
     # Propagate the non linear dynamics forward without control
     tf_drift = non_lin_uncons_parameters["tf_drift"]
     N_drift = non_lin_uncons_parameters["N_drift"]
-    X_history = drifting_simulation(N_drift, tf_drift, non_lin_uncons_parameters)
+    x0 = non_lin_uncons_parameters["x0_drift"]
+    X_history = drifting_simulation(N_drift, tf_drift, x0)
     U_history = zeros(3, N_drift)
     T_history = [k*tf_drift/(N_drift-1) for k=0:N_drift-1]
-    filename = "history_after_drift_" * "tf_" * string(tf_drift) * "_N_" * string(N_drift) * ".png"
-    save_history(T_history, X_history, U_history, filename, non_lin_uncons_parameters)
+    # filename = "history_after_drift_" * "tf_" * string(tf_drift) * "_N_" * string(N_drift) * ".png"
+    # save_history(T_history, X_history, U_history, filename, non_lin_uncons_parameters)
 
     x0_full = X_history[:,N_drift]
     # We recover from the initial drift using a open loop controller relying on the linear dynamics model.
     non_lin_uncons_parameters["orbit_radius"] = norm(x0_full[4:6]) # we set the orbit radius of the cw model.
     non_lin_uncons_parameters["x0"] = x0_full
-    println("x0_full = ", x0_full)
+    println("x0_after_drift = ", x0_full)
 
     # Scale the parameters of the linear model
     scale_non_lin_parameters(non_lin_uncons_parameters)
     println("non_lin_uncons_parameters[x0] = ", non_lin_uncons_parameters["x0"])
 
     # Compute the control sequence
-    X, U, Y, ν, cost_history, constraint_violation = l1_solver(non_lin_uncons_parameters)
+    X, U, Y, ν, cost_history, constraint_violation, optimality_criterion = l1_solver(non_lin_uncons_parameters)
     filename = "non_lin_uncons" * "_rho_" * string(non_lin_uncons_parameters["ρ"])
     filename *= "_iter_" * string(non_lin_uncons_parameters["num_iter"]) * "_Qf_" * string(non_lin_uncons_parameters["Qf"][1,1])
-    save_results(X, U, Y, ν, cost_history, filename, non_lin_uncons_parameters)
+    save_results(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, non_lin_uncons_parameters)
 end
 
 function non_lin_cons_example(ρ)
@@ -444,26 +449,27 @@ function non_lin_cons_example(ρ)
     # Propagate the non linear dynamics forward without control
     tf_drift = non_lin_cons_parameters["tf_drift"]
     N_drift = non_lin_cons_parameters["N_drift"]
-    X_history = drifting_simulation(N_drift, tf_drift, non_lin_cons_parameters)
+    x0 = non_lin_cons_parameters["x0"]
+    X_history = drifting_simulation(N_drift, tf_drift, x0)
     U_history = zeros(3, N_drift)
     T_history = [k*tf_drift/(N_drift-1) for k=0:N_drift-1]
-    filename = "history_after_drift_" * "tf_" * string(tf_drift) * "_N_" * string(N_drift) * ".png"
-    save_history(T_history, X_history, U_history, filename, non_lin_cons_parameters)
+    # filename = "history_after_drift_" * "tf_" * string(tf_drift) * "_N_" * string(N_drift) * ".png"
+    # save_history(T_history, X_history, U_history, filename, non_lin_cons_parameters)
 
     x0_full = X_history[:,N_drift]
     # We recover from the initial drift using a open loop controller relying on the linear dynamics model.
     non_lin_cons_parameters["orbit_radius"] = norm(x0_full[4:6]) # we set the orbit radius of the cw model.
     non_lin_cons_parameters["x0"] = x0_full
-    println("x0_full = ", x0_full)
+    println("x0_after_drift = ", x0_full)
 
     # Scale the parameters of the linear model
     scale_non_lin_parameters(non_lin_cons_parameters)
     println("non_lin_cons_parameters[x0] = ", non_lin_cons_parameters["x0"])
 
     # Compute the control sequence
-    X, U, Y, ν, cost_history, constraint_violation = l1_solver(non_lin_cons_parameters)
+    X, U, Y, ν, cost_history, constraint_violation, optimality_criterion = l1_solver(non_lin_cons_parameters)
     filename = "non_lin_cons" * "_rho_" * string(non_lin_cons_parameters["ρ"])
     filename *= "_iter_" * string(non_lin_cons_parameters["num_iter"]) * "_Qf_" * string(non_lin_cons_parameters["Qf"][1,1])
-    save_results(X, U, Y, ν, cost_history, filename, non_lin_cons_parameters)
+    save_results(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, non_lin_cons_parameters)
     # println("X_final = ", X[:,end])
 end

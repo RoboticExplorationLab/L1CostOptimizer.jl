@@ -7,13 +7,16 @@ function l1_solver(parameters)
     m = parameters["m"]
     # History
     cost_history = zeros(num_iter, 3)
-    constraint_violation = zeros(num_iter)
+    constraint_violation = zeros(num_iter, 6)
+    optimality_criterion = zeros(num_iter)
+
     # Model initialization
     if parameters["linearity"]
         model = TrajectoryOptimization.Model(scaled_cw_dynamics!, n, m)
     elseif !parameters["linearity"]
         model = TrajectoryOptimization.Model(scaled_non_linear_dynamics!, n, m)
     end
+    discretized_model = rk4(model)
     # TVcost initialization
     ρ = parameters["ρ"]
     R = ρ * Matrix{Float64}(I, m, m)
@@ -26,17 +29,8 @@ function l1_solver(parameters)
                                         parameters["H"],
                                         parameters["q"],
                                         TVr[:,k],
-                                        parameters["c"],
-                                        parameters["Qf"],
-                                        parameters["qf"],
-                                        parameters["cf"]) for k=1:N-1]
+                                        parameters["c"]) for k=1:N-1]
     final_cost = QuadraticCost(
-                    parameters["Q"],
-                    parameters["R"],
-                    parameters["H"],
-                    parameters["q"],
-                    parameters["r"],
-                    parameters["c"],
                     parameters["Qf"],
                     parameters["qf"],
                     parameters["cf"])
@@ -45,28 +39,27 @@ function l1_solver(parameters)
     x0 = parameters["x0"]
     xf = parameters["xf"]
     tf = parameters["tf"]
-    # u_min = parameters["u_min"]*[1.0, 0.2, 1.0] ###
-    # u_max = parameters["u_max"]*[1.0, 0.2, 1.0] ###
-    # bound_constraints = bound_constraint(n, m, u_min=u_min, u_max=u_max)
-    bound_constraints = bound_constraint(n, m, u_min=parameters["u_min"], u_max=parameters["u_max"])
-    # if parameters["linearity"] && parameters["using_final_constraints"]
+    bound_constraints = BoundConstraint(n, m, u_min=parameters["u_min"], u_max=parameters["u_max"])
     if parameters["using_final_constraints"]
         goal_constraints = goal_constraint(xf)
-        problem_constraints = TrajectoryOptimization.ProblemConstraints([bound_constraints, goal_constraints], N)
+        problem_constraints = TrajectoryOptimization.Constraints([bound_constraints, goal_constraints], N)
     else
-        problem_constraints = TrajectoryOptimization.ProblemConstraints([bound_constraints], N)
+        problem_constraints = TrajectoryOptimization.Constraints([bound_constraints], N)
     end
-
-    # println("x0 = ", x0)
-    problem = Problem(model, objective, constraints=problem_constraints, x0=x0, N=N, tf=tf)
+    problem = Problem(discretized_model, objective, constraints=problem_constraints, x0=x0, N=N, tf=tf)
 
     initial_controls!(problem, parameters["U0"])
+
     # Solver initialization
+    opts_ilqr = iLQRSolverOptions{Float64}(gradient_type=:ℓ2)
     if parameters["using_constraints"]
-        solver = AugmentedLagrangianSolver(problem)
+        opts_al = AugmentedLagrangianSolverOptions{Float64}(opts_uncon=opts_ilqr)
+        solver = AugmentedLagrangianSolver(problem, opts_al)
+        # solver = AugmentedLagrangianSolver(problem)
         solver.opts.iterations = parameters["al_solver_iter"]
     else
-        solver = iLQRSolver(problem)
+        solver = iLQRSolver(problem, opts_ilqr)
+        # solver = iLQRSolver(problem)
         solver.opts.iterations = parameters["ilqr_solver_iter"]
     end
 
@@ -75,6 +68,7 @@ function l1_solver(parameters)
     Y = parameters["Y0"]
     ν = parameters["ν0"]
     for i=1:num_iter
+        parameters["ρ"] = min(parameters["ρ"]*1.00, 1e5) ###
         # println("i = ", i)
         # Updates
         parameters["scale_y"] = 1 + 0.97*(parameters["scale_y"] - 1)
@@ -93,17 +87,80 @@ function l1_solver(parameters)
             cost_history[i, :] = [cost, lqr_cost, augmented_cost]
             #Constraint violation
             uy = maximum(abs.(U .- Y))
-            constraint_violation[i] = log(10, maximum(uy))
+            # constraint_violation[i] = log(10, maximum(uy))
+            constraint_violation[i,:] = compute_constraint_violation(U, Y, parameters)
+            if parameters["using_constraints"]
+                optimality_criterion[i] = compute_lagrangian_gradient(X, U, Y, ν, parameters)
+                # optimality_criterion[i] = solver.solver_uncon.stats[:gradient][end]
+            else
+                optimality_criterion[i] = compute_lagrangian_gradient(X, U, Y, ν, parameters)
+                # optimality_criterion[i] = solver.stats[:gradient][end]
+            end
             println("uy, C, lqr C, augmented C = ", [uy, cost, lqr_cost, augmented_cost])
             if parameters["stage_plot"] && (i-1)%parameters["stage_plot_freq"] == 0
                 filename = "inter_" * "rho_" * string(parameters["ρ"]) * "_iter_" * string(parameters["num_iter"]) * "_Qf_" * string(parameters["Qf"][1,1]) * "_stage_" * string(i)
-                save_results(X, U, Y, ν, cost_history, filename, parameters)
+                println("size(constraint_violation) = ", size(constraint_violation))
+                save_results(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, parameters)
             end
         end
     end
-    return X, U, Y, ν, cost_history, constraint_violation
+    return X, U, Y, ν, cost_history, constraint_violation, optimality_criterion
 end
 
+
+function compute_lagrangian_gradient(X, U, Y, ν, parameters)
+    # We compute the gradient of the scaled version of the Lagrangian
+    N = parameters["N"]
+    n = parameters["n"]
+    m = parameters["m"]
+    ρ = parameters["ρ"]
+    gradient = zeros(N*n+(N-1)*2*m) #[x1, u1, y1, x2, ...., xn]
+    # Objective function gradient
+    # Stage cost
+    α = parameters["α"]
+    ρ = parameters["ρ"]
+    R = ρ * Matrix{Float64}(I, m, m)
+    TVr = ν - ρ * Y
+    Q = parameters["Q"]
+    H = parameters["H"]
+    q = parameters["q"]
+    for k=1:N-1
+        # gradient wrt xk
+        # println("size(q) = ", size(q))
+        # println("size(X[:,k]'*(Q + Q')./2 ) = ", size(X[:,k]'*(Q + Q')./2 ))
+        # println("size(Y[:,k]'*H) = ",size( Y[:,k]'*H))
+        # println("size(X[:,k]') = ", size(X[:,k]'))
+        # println("size((Q + Q')./2) = ", size((Q + Q')./2))
+        # println("size(Y[:,k]') = ", size(Y[:,k]'))
+        # println("size(H) = ", size(H))
+        gradient[(k-1)*(n+2*m)+1:(k-1)*(n+2*m)+n] += q + (X[:,k]'*(Q + Q')./2 + Y[:,k]'*H)[1,:]
+        # gradient wrt yk
+        gradient[k*(n+2*m)-m+1:k*(n+2*m)] += TVr[:,k] + (Y[:,k]'*(R + R')./2 + X[:,k]'*H')[1,:]
+        # L1 cost gradient wrt yk
+        # we approximate the derivative of the L1 norm using sign(max(|x|-ϵ, 0))*sign(x)
+        # we get                -------- =1
+        #                       |
+        #            -ϵ ------- ϵ
+        #             |
+        # -1 = --------
+        ϵ = 1e-3
+        gradient[k*(n+2*m)-m+1:k*(n+2*m)] += α*sign.(max.(abs.(Y[:,k]).-ϵ, 0)).*sign.(Y[:,k])
+    end
+    # Final cost
+    qf = parameters["qf"]
+    Qf = parameters["Qf"]
+    gradient[end-n+1:end] += qf + (X[:,end]'*(Qf + Qf')./2)[1,:]
+
+    # Gradient of terms in (U-Y)
+    for k=1:N-1
+        # gradient wrt uk
+        gradient[k*(n+2*m)-2*m+1:k*(n+2*m)-m] += ν[:,k] + ρ*(U[:,k] .- Y[:,k])
+        # gradient wrt yk
+        gradient[k*(n+2*m)-m+1:k*(n+2*m)] += -ν[:,k] + ρ*(U[:,k] .- Y[:,k])
+    end
+    # println(norm(gradient, 2)/length(gradient))
+    return norm(gradient, 2)/length(gradient)
+end
 
 
 function dynamics_update(X, U, Y, ν, parameters, problem, solver)
@@ -124,6 +181,7 @@ function dynamics_update(X, U, Y, ν, parameters, problem, solver)
     # println("*********************lag = ", solver.λ[1])
     # solver.μ .= [PartedArrays.PartedVector(zero(solver.μ[k]), solver.C[k].parts) for k=1:N]
     solve!(problem, solver)
+    # println("***********************solver.stats = ", solver.stats)
     X = to_array(problem.X)
     U = to_array(problem.U)
     return X, U
@@ -172,7 +230,7 @@ function accelerated_l1_solver(parameters)
     m = parameters["m"]
     # History
     cost_history = zeros(num_iter, 3)
-    constraint_violation = zeros(num_iter)
+    constraint_violation = zeros(num_iter, 3)
     # Model initialization
     if parameters["linearity"]
         model = TrajectoryOptimization.Model(scaled_cw_dynamics!, n, m)

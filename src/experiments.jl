@@ -29,7 +29,6 @@ function run_experiments(parameters)
     return logs
 end
 
-
 function circular_orbit(orbit_radius, θ, μ)
     # Compute the state [x, y, z, xd, yd, zd]
     # for a circular orbit in the XY plane.
@@ -46,11 +45,17 @@ function full_to_cw(x_full)
     rd_target = x_full[10:12]
     Δr = -x_full[1:3] # r_ego - r_target
     Δrd = -x_full[7:9] # rd_ego - rd_target
+    r_ego = r_target - x_full[1:3]
+    rd_ego = rd_target - x_full[7:9]
+
     # define the axis of the cw frame
-    ey_cw = r_target ./ norm(r_target)
-    ex_cw = -rd_target ./ norm(rd_target)
-    ez_cw = cross(ex_cw, ey_cw)
-    x_cw = [Δr'*ex_cw, Δr'*ey_cw, Δr'*ez_cw, Δrd'*ex_cw, Δrd'*ey_cw, Δrd'*ez_cw,]
+    ey_cw = r_target / norm(r_target)
+    ez_cw = cross(ey_cw, rd_target)
+    ez_cw = ez_cw / norm(ez_cw)
+    ex_cw = cross(ey_cw, ez_cw)
+    x_cw = zeros(6)
+    x_cw[1:3] = [ex_cw ey_cw ez_cw]'*(r_ego .- r_target)
+    x_cw[4:6] = [ex_cw ey_cw ez_cw]'*(rd_ego .- rd_target)
     return x_cw
 end
 
@@ -64,13 +69,12 @@ function rk4_step(f!, x, u, Δt)
     x + (k1 + 2*k2 + 2*k3 + k4)/6
 end
 
-function drifting_simulation(N, tf, parameters)
-    n = parameters["n"]
-    m = parameters["m"]
-    x0 = parameters["x0"]
+function drifting_simulation(N, tf, x0)
+    non_lin_parameters = define_non_lin_parameters()
+    n = non_lin_parameters["n"]
+    m = non_lin_parameters["m"]
     X = zeros(n, N)
     X[:,1] = x0
-    model = TrajectoryOptimization.Model(non_linear_dynamics!, n, m)
     for k=2:N
         u = zeros(m)
         Δt = tf / (N-1)
@@ -111,11 +115,6 @@ function control_cw_to_full(x0_full, X, U, Δt_mpc, lin_parameters, non_lin_para
     end
     return U_full
 end
-
-
-
-
-
 
 function mpc_example()
     lin_parameters = define_lin_parameters()
