@@ -10,7 +10,7 @@ include("experiment_parameters.jl")
 include("parameters.jl")
 include("solver.jl")
 include("utils.jl")
-#
+
 # non_lin_parameters = define_non_lin_parameters()
 # scale_non_lin_parameters(non_lin_parameters)
 # lin_parameters = define_lin_parameters()

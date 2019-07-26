@@ -2,13 +2,14 @@ function define_lin_constrained_parameters()
     μ = 3.99*10^14 # Standard gravitational parameter m^3 s^-2
     a = 6731.0*10^3 # semi major axis m
     alt = 5e5 # altitude of the target satellite in m
+    orbit_radius = a+alt
     N = 100
     n = 6
     m = 3
     tf = 6000 # 1 revolutions
     Δt = tf/(N-1)
 
-    x_target = circular_orbit(lin_parameters["orbit_radius"], 0, lin_parameters["μ"])
+    x_target = circular_orbit(orbit_radius, 0, μ)
     Δr0 = [20.0, 30.0, 10.0] # initial position delta
     Δrd0 = [0.4, 0.6, -0.1] # intial velocity delta
     x0_drift = [Δr0; x_target[1:3]; Δrd0; x_target[4:6]] # initial state
@@ -23,13 +24,14 @@ function define_lin_constrained_parameters()
                   "ilqr_solver_iter" => 1, # number of iterations of the inner solver (ilqr = unconstrained)
                   "al_solver_iter" => 100, # number of iterations of the inner solver (al = constrained)
                   "scale_y" => 1.1, # helpful parameter for fast convergence
+                  "stopping_criterion" => 1e-3, # stops the algo when ||U-Y||_2/dim(U) <= stopping_criterion
                   "N" => N, # horizon
                   "n"=> n, # state size
                   "m"=> m, # control size
                   "Δt" => Δt, # time step
                   "tf" => tf, # final time
                   "N_drift" => 10000, # drifting nodes
-                  "tf_drift" => 12*60, # drifting time
+                  "tf_drift" => 12*60*60, # drifting time
                   "x0_drift" => x0_drift, # drifting time
                   "ρ" => 1e0, # weighting parameter for augmented lagrangian
                   "α" => 1.0, # weighting parameter
@@ -52,20 +54,20 @@ function define_lin_constrained_parameters()
                   "plot_format" => "eps", # using constraints on control
                   "timing" => false, # timing the function
                   "linearity" => true, # using linear dynamics
-                  "u_min" => -2e-1, # lower bound on u
-                  "u_max" => 2e-1, # upper bound on u
+                  "u_min" => -1.5e-1, # lower bound on u
+                  "u_max" => 1.5e-1, # upper bound on u
                   "Q" => 0.0 * Matrix{Float64}(I, n, n), # Quadratic stage cost for states (n,n)
-                  "R" => 1e-20 * Matrix{Float64}(I, m, m), # Quadratic stage cost for controls (m,m)
+                  "R" => 1e-40 * Matrix{Float64}(I, m, m), # Quadratic stage cost for controls (m,m)
                   "H" => zeros(m, n), # Quadratic Cross-coupling for state and controls (m,n)
                   "q" => zeros(n), # Linear term on states (n,)
                   "r" => zeros(m), # Linear term on controls (m,)
                   "c" => 0.0, # constant term
-                  "Qf" => 10.0 * Matrix{Float64}(I, n, n), # Quadratic final cost for terminal state (n,n)
+                  "Qf" => 100.0 * Matrix{Float64}(I, n, n), # Quadratic final cost for terminal state (n,n)
                   "qf" => zeros(n), # Linear term on terminal state (n,)
                   "cf" => 0.0, # constant term (terminal)
                   "μ" => μ, # Standard gravitational parameter m^3 s^-2
                   "a" => a, # semi major axis m
-                  "orbit_radius" => a+alt, # semi major axis m
+                  "orbit_radius" => orbit_radius, # semi major axis m
                   "m_ego" => m_ego, # mass of the ego satellite kg
                    )
     return parameters
@@ -75,13 +77,14 @@ function define_lin_unconstrained_parameters()
     μ = 3.99*10^14 # Standard gravitational parameter m^3 s^-2
     a = 6731.0*10^3 # semi major axis m
     alt = 5e5 # altitude of the target satellite in m
+    orbit_radius = a+alt
     N = 100
     n = 6
     m = 3
     tf = 6000 # 1 revolutions
     Δt = tf/(N-1)
 
-    x_target = circular_orbit(lin_parameters["orbit_radius"], 0, lin_parameters["μ"])
+    x_target = circular_orbit(orbit_radius, 0, μ)
     Δr0 = [20.0, 30.0, 10.0] # initial position delta
     Δrd0 = [0.4, 0.6, -0.1] # intial velocity delta
     x0_drift = [Δr0; x_target[1:3]; Δrd0; x_target[4:6]] # initial state
@@ -92,17 +95,18 @@ function define_lin_unconstrained_parameters()
     # mass
     m_ego = 4.6
 
-    parameters = Dict("num_iter" => 600,#120, # number of iteration of ADMM
+    parameters = Dict("num_iter" => 200,#120, # number of iteration of ADMM
                   "ilqr_solver_iter" => 1, # number of iterations of the inner solver (ilqr = unconstrained)
                   "al_solver_iter" => 100, # number of iterations of the inner solver (al = constrained)
                   "scale_y" => 1.1, # helpful parameter for fast convergence
+                  "stopping_criterion" => 1e-4, # stops the algo when ||U-Y||_2/dim(U) <= stopping_criterion
                   "N" => N, # horizon
                   "n"=> n, # state size
                   "m"=> m, # control size
                   "Δt" => Δt, # time step
                   "tf" => tf, # final time
                   "N_drift" => 10000, # drifting nodes
-                  "tf_drift" => 12*60, # drifting time
+                  "tf_drift" => 12*60*60, # drifting time
                   "x0_drift" => x0_drift, # drifting time
                   "ρ" => 1e-1, # weighting parameter for augmented lagrangian
                   "α" => 1.0, # weighting parameter
@@ -128,17 +132,17 @@ function define_lin_unconstrained_parameters()
                   "u_min" => -2e-1, # lower bound on u
                   "u_max" => 2e-1, # upper bound on u
                   "Q" => 0.0 * Matrix{Float64}(I, n, n), # Quadratic stage cost for states (n,n)
-                  "R" => 1e-20 * Matrix{Float64}(I, m, m), # Quadratic stage cost for controls (m,m)
+                  "R" => 1e-40 * Matrix{Float64}(I, m, m), # Quadratic stage cost for controls (m,m)
                   "H" => zeros(m, n), # Quadratic Cross-coupling for state and controls (m,n)
                   "q" => zeros(n), # Linear term on states (n,)
                   "r" => zeros(m), # Linear term on controls (m,)
                   "c" => 0.0, # constant term
-                  "Qf" => 100.0 * Matrix{Float64}(I, n, n), # Quadratic final cost for terminal state (n,n)
+                  "Qf" => 1000.0 * Matrix{Float64}(I, n, n), # Quadratic final cost for terminal state (n,n)
                   "qf" => zeros(n), # Linear term on terminal state (n,)
                   "cf" => 0.0, # constant term (terminal)
                   "μ" => μ, # Standard gravitational parameter m^3 s^-2
                   "a" => a, # semi major axis m
-                  "orbit_radius" => a+alt, # semi major axis m
+                  "orbit_radius" => orbit_radius, # semi major axis m
                   "m_ego" => m_ego, # mass of the ego satellite kg
                    )
     return parameters
@@ -146,8 +150,10 @@ end
 
 function define_non_lin_unconstrained_parameters()
     μ = 3.99*10^14 # Standard gravitational parameter m^3 s^-2
+
     a = 6731.0*10^3 # semi major axis m
     alt = 5e5 # altitude
+    orbit_radius = a+alt
     N = 100
     n = 12
     m = 3
@@ -156,14 +162,14 @@ function define_non_lin_unconstrained_parameters()
     r0 = [a + alt, 0.0, 0.0]
     v0 = [0.0, sqrt(μ/norm(r0)), 0.0]
 
-    x_target = circular_orbit(lin_parameters["orbit_radius"], 0, lin_parameters["μ"])
+    x_target = circular_orbit(orbit_radius, 0, μ)
     Δr0 = [20.0, 30.0, 10.0] # initial position delta
     Δrd0 = [0.4, 0.6, -0.1] # intial velocity delta
     x0_drift = [Δr0; x_target[1:3]; Δrd0; x_target[4:6]] # initial state
 
     x0 = [[0, -100, 0]; r0; zeros(3); v0]
     xf = zeros(n) # ### we need to get rid of penalty on x4,5,6 and x10,11,12
-    Qf = 100 .* Array(Diagonal([ones(3); zeros(3); ones(3); zeros(3)]))
+    Qf = 1000 .* Array(Diagonal([ones(3); zeros(3); ones(3); zeros(3)]))
 
     # mass
     m_ego = 4.6 # kg
@@ -173,13 +179,14 @@ function define_non_lin_unconstrained_parameters()
                   "ilqr_solver_iter" => 1, # number of iterations of the inner solver (ilqr = unconstrained)
                   "al_solver_iter" => 100, # number of iterations of the inner solver (al = constrained
                   "scale_y" => 1.1, # helpful parameter for fast convergence
+                  "stopping_criterion" => 1e-3, # stops the algo when ||U-Y||_2/dim(U) <= stopping_criterion
                   "N" => N, # horizon
                   "n"=> n, # state size
                   "m"=> m, # control size
                   "Δt" => Δt, # time step
                   "tf" => tf, # final time
                   "N_drift" => 10000, # drifting nodes
-                  "tf_drift" => 12*60, # drifting time
+                  "tf_drift" => 12*60*60, # drifting time
                   "x0_drift" => x0_drift, # drifting time
                   "ρ" => 1e-1, # weighting parameter for augmented lagrangian
                   "α" => 1.0, # weighting parameter
@@ -208,7 +215,7 @@ function define_non_lin_unconstrained_parameters()
                   "u_min" => -2e-1, # lower bound on u
                   "u_max" => 2e-1, # upper bound on u
                   "Q" => 0.0 * Matrix{Float64}(I, n, n), # Quadratic stage cost for states (n,n)
-                  "R" => 1e-20 * Matrix{Float64}(I, m, m), # Quadratic stage cost for controls (m,m)
+                  "R" => 1e-40 * Matrix{Float64}(I, m, m), # Quadratic stage cost for controls (m,m)
                   "H" => zeros(m, n), # Quadratic Cross-coupling for state and controls (m,n)
                   "q" => zeros(n), # Linear term on states (n,)
                   "r" => zeros(m), # Linear term on controls (m,)
@@ -218,7 +225,7 @@ function define_non_lin_unconstrained_parameters()
                   "cf" => 0.0, # constant term (terminal)
                   "μ" => μ, # Standard gravitational parameter m^3 s^-2
                   "a" => a, # semi major axis m
-                  "orbit_radius" => a+alt, # semi major axis m
+                  "orbit_radius" => orbit_radius, # semi major axis m
                   "J2" => 1.75553*10^25, # J2 factor in m^5.s^-2
                   "ω" => [0, 0, 2*pi/((23*60 + 56)*60 + 4)], # Earth's rotational speed vector rad s^-1
                   "m_ego" => m_ego, # mass of the ego satellite kg
@@ -235,6 +242,7 @@ function define_non_lin_constrained_parameters()
     μ = 3.99*10^14 # Standard gravitational parameter m^3 s^-2
     a = 6731.0*10^3 # semi major axis m
     alt = 5e5 # altitude
+    orbit_radius = a+alt
     N = 100
     n = 12
     m = 3
@@ -243,7 +251,7 @@ function define_non_lin_constrained_parameters()
     r0 = [a + alt, 0.0, 0.0]
     v0 = [0.0, sqrt(μ/norm(r0)), 0.0]
 
-    x_target = circular_orbit(lin_parameters["orbit_radius"], 0, lin_parameters["μ"])
+    x_target = circular_orbit(orbit_radius, 0, μ)
     Δr0 = [20.0, 30.0, 10.0] # initial position delta
     Δrd0 = [0.4, 0.6, -0.1] # intial velocity delta
     x0_drift = [Δr0; x_target[1:3]; Δrd0; x_target[4:6]] # initial state
@@ -266,16 +274,17 @@ function define_non_lin_constrained_parameters()
                   "ilqr_solver_iter" => 1, # number of iterations of the inner solver (ilqr = unconstrained)
                   "al_solver_iter" => 10, # number of iterations of the inner solver (al = constrained)
                   "scale_y" => 1.5, # helpful parameter for fast convergence
+                  "stopping_criterion" => 1e-3, # stops the algo when ||U-Y||_2/dim(U) <= stopping_criterion
                   "N" => N, # horizon
                   "n"=> n, # state size
                   "m"=> m, # control size
                   "Δt" => Δt, # time step
                   "tf" => tf, # final time
                   "N_drift" => 10000, # drifting nodes
-                  "tf_drift" => 12*60, # drifting time
+                  "tf_drift" => 12*60*60, # drifting time
                   "x0_drift" => x0_drift, # drifting time
                   "ρ" => 1e0, # weighting parameter for augmented lagrangian
-                  "α" => 1e0, # weighting parameter
+                  "α" => 1.0, # weighting parameter
                   "X0" => zeros(n, N), # reshape(repeat(x0, outer = [N, 1]), (n, N)), # initial state trajectory
                   "U0" => zeros(m, N-1), # initial control trajectory
                   "ν0" => zeros(m, N-1), # initial dual
@@ -294,12 +303,12 @@ function define_non_lin_constrained_parameters()
                   "using_final_constraints" => true, # using constraints on control
                   "complete_results" => true, # using constraints on control
                   "stage_plot" => true, # using constraints on control
-                  "stage_plot_freq" => 5, # using constraints on control
+                  "stage_plot_freq" => 25, # using constraints on control
                   "plot_format" => "eps", # using constraints on control
                   "timing" => false, # timing the function
                   "linearity" => false, # using non linear dynamics
-                  "u_min" => -4e-1, # lower bound on u
-                  "u_max" => 4e-1, # upper bound on u
+                  "u_min" => -5e-2, # lower bound on u
+                  "u_max" => 5e-2, # upper bound on u
                   "Q" => 0.0 * Matrix{Float64}(I, n, n), # Quadratic stage cost for states (n,n)
                   "R" => 1e-40 * Matrix{Float64}(I, m, m), # Quadratic stage cost for controls (m,m)
                   "H" => zeros(m, n), # Quadratic Cross-coupling for state and controls (m,n)
@@ -311,7 +320,7 @@ function define_non_lin_constrained_parameters()
                   "cf" => 0.0, # constant term (terminal)
                   "μ" => μ, # Standard gravitational parameter m^3 s^-2
                   "a" => a, # semi major axis m
-                  "orbit_radius" => a+alt, # semi major axis m
+                  "orbit_radius" => orbit_radius, # semi major axis m
                   "J2" => 1.75553*10^25, # J2 factor in m^5.s^-2
                   "ω" => [0, 0, 2*pi/((23*60 + 56)*60 + 4)], # Earth's rotational speed vector rad s^-1
                   "m_ego" => m_ego, # mass of the ego satellite kg
@@ -324,29 +333,12 @@ function define_non_lin_constrained_parameters()
     return parameters
 end
 
-function lin_cons_example(ρ)
+function lin_cons_example(ρ, stopping_criterion)
     lin_cons_parameters = define_lin_constrained_parameters()
-
-
-    # non_lin_parameters = define_non_lin_parameters()
     lin_cons_parameters["ρ"] = ρ
+    lin_cons_parameters["stopping_criterion"] = stopping_criterion
 
-    # Define initial state
-    # non_lin_parameters["x0"] = lin_cons_parameters["x0_drift"]
-    # println("x0 = ", non_lin_parameters["x0"])
-
-    # Propagate the non linear dynamics forward without control
-    tf_drift = lin_cons_parameters["tf_drift"]
-    N_drift = lin_cons_parameters["N_drift"]
-    x0 = lin_cons_parameters["x0_drift"]
-    X_history = drifting_simulation(N_drift, tf_drift, x0)
-    U_history = zeros(3, N_drift)
-    T_history = [k*tf_drift/(N_drift-1) for k=0:N_drift-1]
-
-    # filename = "history_after_drift_" * "tf_" * string(tf_drift) * "_N_" * string(N_drift) * ".png"
-    # save_history(T_history, X_history, U_history, filename, non_lin_parameters)
-
-    x0_full = X_history[:,N_drift]
+    x0_full = initial_drift(lin_cons_parameters)
     # We recover from the initial drift using a open loop controller reyling on the linear dynamics model.
     lin_cons_parameters["orbit_radius"] = norm(x0_full[4:6]) # we set the orbit radius of the cw model.
     x0_cw = full_to_cw(x0_full)
@@ -356,7 +348,6 @@ function lin_cons_example(ρ)
 
     # Scale the parameters of the linear model
     scale_lin_parameters(lin_cons_parameters)
-    println("lin_cons_parameters[x0] = ", lin_cons_parameters["x0"])
 
     # Compute the control sequence
     X, U, Y, ν, cost_history, constraint_violation, optimality_criterion = l1_solver(lin_cons_parameters)
@@ -365,27 +356,12 @@ function lin_cons_example(ρ)
     save_results(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, lin_cons_parameters)
 end
 
-function lin_uncons_example(ρ)
+function lin_uncons_example(ρ, stopping_criterion)
     lin_uncons_parameters = define_lin_unconstrained_parameters()
-    # non_lin_parameters = define_non_lin_parameters()
     lin_uncons_parameters["ρ"] = ρ
+    lin_uncons_parameters["stopping_criterion"] = stopping_criterion
 
-    # Define initial state
-    # non_lin_parameters["x0"] = lin_uncons_parameters["x0_drift"]
-    # println("x0 = ", non_lin_parameters["x0"])
-
-    # Propagate the non linear dynamics forward without control
-    tf_drift = lin_uncons_parameters["tf_drift"]
-    N_drift = lin_uncons_parameters["N_drift"]
-    x0 = lin_uncons_parameters["x0_drift"]
-    X_history = drifting_simulation(N_drift, tf_drift, x0)
-    U_history = zeros(3, N_drift)
-    T_history = [k*tf_drift/(N_drift-1) for k=0:N_drift-1]
-
-    # filename = "history_after_drift_" * "tf_" * string(tf_drift) * "_N_" * string(N_drift) * ".png"
-    # save_history(T_history, X_history, U_history, filename, non_lin_parameters)
-
-    x0_full = X_history[:,N_drift]
+    x0_full = initial_drift(lin_uncons_parameters)
     # We recover from the initial drift using a open loop controller reyling on the linear dynamics model.
     lin_uncons_parameters["orbit_radius"] = norm(x0_full[4:6]) # we set the orbit radius of the cw model.
     x0_cw = full_to_cw(x0_full)
@@ -395,7 +371,6 @@ function lin_uncons_example(ρ)
 
     # Scale the parameters of the linear model
     scale_lin_parameters(lin_uncons_parameters)
-    println("lin_uncons_parameters[x0] = ", lin_uncons_parameters["x0"])
 
     # Compute the control sequence
     X, U, Y, ν, cost_history, constraint_violation, optimality_criterion = l1_solver(lin_uncons_parameters)
@@ -404,72 +379,44 @@ function lin_uncons_example(ρ)
     save_results(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, lin_uncons_parameters)
 end
 
-function non_lin_uncons_example(ρ)
+function non_lin_uncons_example(ρ, stopping_criterion)
     non_lin_uncons_parameters = define_non_lin_unconstrained_parameters()
     non_lin_uncons_parameters["ρ"] = ρ
+    non_lin_uncons_parameters["stopping_criterion"] = stopping_criterion
 
-    # Define initial state
-    println("x0 = ", non_lin_uncons_parameters["x0_drift"])
-    non_lin_uncons_parameters["x0"] = non_lin_uncons_parameters["x0_drift"]
-    # Propagate the non linear dynamics forward without control
-    tf_drift = non_lin_uncons_parameters["tf_drift"]
-    N_drift = non_lin_uncons_parameters["N_drift"]
-    x0 = non_lin_uncons_parameters["x0_drift"]
-    X_history = drifting_simulation(N_drift, tf_drift, x0)
-    U_history = zeros(3, N_drift)
-    T_history = [k*tf_drift/(N_drift-1) for k=0:N_drift-1]
-    # filename = "history_after_drift_" * "tf_" * string(tf_drift) * "_N_" * string(N_drift) * ".png"
-    # save_history(T_history, X_history, U_history, filename, non_lin_uncons_parameters)
-
-    x0_full = X_history[:,N_drift]
-    # We recover from the initial drift using a open loop controller relying on the linear dynamics model.
+    x0_full = initial_drift(non_lin_uncons_parameters)
+    # We recover from the initial drift using a open loop controller reyling on the linear dynamics model.
     non_lin_uncons_parameters["orbit_radius"] = norm(x0_full[4:6]) # we set the orbit radius of the cw model.
     non_lin_uncons_parameters["x0"] = x0_full
-    println("x0_after_drift = ", x0_full)
+    println("x0_full = ", x0_full)
 
     # Scale the parameters of the linear model
     scale_non_lin_parameters(non_lin_uncons_parameters)
-    println("non_lin_uncons_parameters[x0] = ", non_lin_uncons_parameters["x0"])
 
     # Compute the control sequence
     X, U, Y, ν, cost_history, constraint_violation, optimality_criterion = l1_solver(non_lin_uncons_parameters)
-    filename = "non_lin_uncons" * "_rho_" * string(non_lin_uncons_parameters["ρ"])
+    filename = "non_lin_uncons_" * "_rho_" * string(non_lin_uncons_parameters["ρ"])
     filename *= "_iter_" * string(non_lin_uncons_parameters["num_iter"]) * "_Qf_" * string(non_lin_uncons_parameters["Qf"][1,1])
     save_results(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, non_lin_uncons_parameters)
 end
 
-function non_lin_cons_example(ρ)
+function non_lin_cons_example(ρ, stopping_criterion)
     non_lin_cons_parameters = define_non_lin_constrained_parameters()
     non_lin_cons_parameters["ρ"] = ρ
+    non_lin_cons_parameters["stopping_criterion"] = stopping_criterion
 
-    # Define initial state
-    println("x0 = ", non_lin_cons_parameters["x0_drift"])
-    non_lin_cons_parameters["x0"] = non_lin_cons_parameters["x0_drift"]
-    # non_lin_cons_parameters["xf"] =
-    # Propagate the non linear dynamics forward without control
-    tf_drift = non_lin_cons_parameters["tf_drift"]
-    N_drift = non_lin_cons_parameters["N_drift"]
-    x0 = non_lin_cons_parameters["x0"]
-    X_history = drifting_simulation(N_drift, tf_drift, x0)
-    U_history = zeros(3, N_drift)
-    T_history = [k*tf_drift/(N_drift-1) for k=0:N_drift-1]
-    # filename = "history_after_drift_" * "tf_" * string(tf_drift) * "_N_" * string(N_drift) * ".png"
-    # save_history(T_history, X_history, U_history, filename, non_lin_cons_parameters)
-
-    x0_full = X_history[:,N_drift]
-    # We recover from the initial drift using a open loop controller relying on the linear dynamics model.
+    x0_full = initial_drift(non_lin_cons_parameters)
+    # We recover from the initial drift using a open loop controller reyling on the linear dynamics model.
     non_lin_cons_parameters["orbit_radius"] = norm(x0_full[4:6]) # we set the orbit radius of the cw model.
     non_lin_cons_parameters["x0"] = x0_full
-    println("x0_after_drift = ", x0_full)
+    println("x0_full = ", x0_full)
 
     # Scale the parameters of the linear model
     scale_non_lin_parameters(non_lin_cons_parameters)
-    println("non_lin_cons_parameters[x0] = ", non_lin_cons_parameters["x0"])
 
     # Compute the control sequence
     X, U, Y, ν, cost_history, constraint_violation, optimality_criterion = l1_solver(non_lin_cons_parameters)
-    filename = "non_lin_cons" * "_rho_" * string(non_lin_cons_parameters["ρ"])
+    filename = "non_lin_uncons_" * "_rho_" * string(non_lin_cons_parameters["ρ"])
     filename *= "_iter_" * string(non_lin_cons_parameters["num_iter"]) * "_Qf_" * string(non_lin_cons_parameters["Qf"][1,1])
     save_results(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, non_lin_cons_parameters)
-    # println("X_final = ", X[:,end])
 end

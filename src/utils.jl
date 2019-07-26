@@ -51,6 +51,7 @@ function compute_constraint_violation(U, Y, parameters)
     out = [constraint_violation_U; constraint_violation_Y]
     return out
 end
+
 function save_results(X_, U_, Y_, ν, cost_history, constraint_violation, optimality_criterion, filename, parameters)
     num_iter = parameters["num_iter"]
     N = parameters["N"]
@@ -107,9 +108,9 @@ function save_results(X_, U_, Y_, ν, cost_history, constraint_violation, optima
         step(T, X_cw[1,:], color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$x_1$ ego")
         step(T, X_cw[2,:], color="darkorange", linewidth=1.0, linestyle="-", label=L"$x_2$ ego")
         step(T, X_cw[3,:], color="forestgreen", linewidth=1.0, linestyle="-", label=L"$x_3$ ego")
-        step(T, X[1,:], color="cornflowerblue", linewidth=2.0, linestyle="--", label=L"$x_1$ ego")
-        step(T, X[2,:], color="darkorange", linewidth=2.0, linestyle="--", label=L"$x_2$ ego")
-        step(T, X[3,:], color="forestgreen", linewidth=2.0, linestyle="--", label=L"$x_3$ ego")
+        # step(T, X[1,:], color="cornflowerblue", linewidth=2.0, linestyle="--", label=L"$x_1$ ego")
+        # step(T, X[2,:], color="darkorange", linewidth=2.0, linestyle="--", label=L"$x_2$ ego")
+        # step(T, X[3,:], color="forestgreen", linewidth=2.0, linestyle="--", label=L"$x_3$ ego")
     end
     title("Positions")
     #grid("on")
@@ -127,9 +128,9 @@ function save_results(X_, U_, Y_, ν, cost_history, constraint_violation, optima
         step(T, X_cw[4,:], color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$\dot{x}_1$ ego")
         step(T, X_cw[5,:], color="darkorange", linewidth=1.0, linestyle="-", label=L"$\dot{x}_2$ ego")
         step(T, X_cw[6,:], color="forestgreen", linewidth=1.0, linestyle="-", label=L"$\dot{x}_3$ ego")
-        step(T, X[7,:], color="cornflowerblue", linewidth=2.0, linestyle="--", label=L"$\dot{x}_1$ ego")
-        step(T, X[8,:], color="darkorange", linewidth=2.0, linestyle="--", label=L"$\dot{x}_2$ ego")
-        step(T, X[9,:], color="forestgreen", linewidth=2.0, linestyle="--", label=L"$\dot{x}_3$ ego")
+        # step(T, X[7,:], color="cornflowerblue", linewidth=2.0, linestyle="--", label=L"$\dot{x}_1$ ego")
+        # step(T, X[8,:], color="darkorange", linewidth=2.0, linestyle="--", label=L"$\dot{x}_2$ ego")
+        # step(T, X[9,:], color="forestgreen", linewidth=2.0, linestyle="--", label=L"$\dot{x}_3$ ego")
     end
     title("Velocities")
     #grid("on")
@@ -246,10 +247,12 @@ function save_results(X_, U_, Y_, ν, cost_history, constraint_violation, optima
         xlabel("L1 Solver Iterations")
         ylabel(L"Optimality Criterion")
         legend()
+        yscale("log")
     end
 
     tight_layout()
     savefig("result/" * filename*"."*parameters["plot_format"], format=parameters["plot_format"], dpi=300)
     close()
+    save("result/control/" * filename*".jld", "U", U, "x0", X[:,1])
     return
 end

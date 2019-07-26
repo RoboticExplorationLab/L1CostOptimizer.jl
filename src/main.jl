@@ -1,4 +1,5 @@
 using BenchmarkTools
+using JLD
 using LinearAlgebra
 using TrajectoryOptimization
 using PartedArrays
@@ -10,40 +11,40 @@ include("experiments.jl")
 include("experiment_parameters.jl")
 include("parameters.jl")
 include("solver.jl")
+include("test.jl")
 include("utils.jl")
-
-non_lin_parameters = define_non_lin_parameters()
-scale_non_lin_parameters(non_lin_parameters)
-lin_parameters = define_lin_parameters()
-scale_lin_parameters(lin_parameters)
-
-# P = [10.0^i for i=0:0]
-# for ρ in P
-#     non_lin_cons_example(ρ)
-# end
 #
-P = [10.0^i for i=-1:-1]
+# non_lin_parameters = define_non_lin_parameters()
+# scale_non_lin_parameters(non_lin_parameters)
+# lin_parameters = define_lin_parameters()
+# scale_lin_parameters(lin_parameters)
+
+P = [10.0^i for i=-0:0]
+stopping_criterion = 1e-10
 for ρ in P
-    non_lin_uncons_example(ρ)
+    non_lin_cons_example(ρ, stopping_criterion)
 end
-# # @btime non_lin_uncons_example(0.1)
 
 
-
-
-P = [10.0^i for i=-1:-1]
 # P = [10.0^i for i=-0:-0]
-for ρ in P
-    lin_uncons_example(ρ)
-end
-a=1
-
-
+# stopping_criterion = 1e-5
+# for ρ in P
+#     non_lin_uncons_example(ρ, stopping_criterion)
+# end
 
 #
-# P = [10.0^i for i=0:0]
+# P = [10.0^i for i=-1:-1]
+# stopping_criterion = 1e-4
 # for ρ in P
-#     lin_cons_example(ρ)
+#     lin_uncons_example(ρ, stopping_criterion)
+# end
+
+#
+# P = [10.0^i for i=-0:-0]
+# stopping_criterion = 1e-4
+# for ρ in P
+
+#     lin_cons_example(ρ, stopping_criterion)
 # end
 
 
@@ -79,20 +80,3 @@ a=1
 # # logs = run_experiments(lin_parameters)
 # logs = run_experiments(lin_parameters)
 #
-
-
-
-
-
-# n = 5
-# m = 3
-# Q = ones(n,n)
-# R = Array(Diagonal(ones(m)))
-# H = ones(m,n)
-# q = ones(n)
-# r = ones(m)
-# c = 1
-# Qf = ones(n,n)
-# qf = ones(n)
-# cf = 1
-# QuadraticCost(Q, R, H, q, r, c, Qf, qf, cf)
