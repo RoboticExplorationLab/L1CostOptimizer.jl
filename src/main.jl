@@ -13,39 +13,36 @@ include("parameters.jl")
 include("solver.jl")
 include("test.jl")
 include("utils.jl")
+
+
+
+
+# P = [10.0^i for i=-0:-0]
+# stopping_criterion = 1e-4
+# for ρ in P
+#     non_lin_cons_example(ρ, stopping_criterion)
+# end
 #
-# non_lin_parameters = define_non_lin_parameters()
-# scale_non_lin_parameters(non_lin_parameters)
-# lin_parameters = define_lin_parameters()
-# scale_lin_parameters(lin_parameters)
-
-P = [10.0^i for i=-0:0]
-stopping_criterion = 1e-10
-for ρ in P
-    non_lin_cons_example(ρ, stopping_criterion)
-end
-
-
+#
 # P = [10.0^i for i=-0:-0]
 # stopping_criterion = 1e-5
 # for ρ in P
 #     non_lin_uncons_example(ρ, stopping_criterion)
 # end
 
-#
+
 # P = [10.0^i for i=-1:-1]
 # stopping_criterion = 1e-4
 # for ρ in P
 #     lin_uncons_example(ρ, stopping_criterion)
 # end
 
-#
-# P = [10.0^i for i=-0:-0]
-# stopping_criterion = 1e-4
-# for ρ in P
 
-#     lin_cons_example(ρ, stopping_criterion)
-# end
+P = [10.0^i for i=-0:-0]
+stopping_criterion = 1e-4
+for ρ in P
+    lin_cons_example(ρ, stopping_criterion)
+end
 
 
 # function gradient_todorov(prob::Problem,solver::iLQRSolver)
@@ -65,17 +62,7 @@ end
 #
 
 
-#
-# include("parameters.jl")
-# non_lin_parameters = define_non_lin_parameters()
-# lin_parameters = define_lin_parameters()
-#
-# # mpc_example()
 
-# include("parameters.jl")
-# lin_parameters = define_lin_parameters()
-# non_lin_parameters = define_non_lin_parameters()
-#
 # # @profiler logs = run_experiments()
 # # logs = run_experiments(lin_parameters)
 # logs = run_experiments(lin_parameters)

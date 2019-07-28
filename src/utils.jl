@@ -52,7 +52,7 @@ function compute_constraint_violation(U, Y, parameters)
     return out
 end
 
-function save_results(X_, U_, Y_, ν, cost_history, constraint_violation, optimality_criterion, filename, parameters)
+function save_results(X_, U_, Y_, ν, cost_history, constraint_violation, optimality_criterion, filename, iter, parameters)
     num_iter = parameters["num_iter"]
     N = parameters["N"]
     n = parameters["n"]
@@ -187,13 +187,14 @@ function save_results(X_, U_, Y_, ν, cost_history, constraint_violation, optima
         legend()
 
         subplot(plot_Y, plot_X, 7)
-        plot(log.(10, cost_history[:,1]), color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$cost$")
-        # plot(log.(cost_history[:,2]), color="darkorange", linewidth=1.0, linestyle="-", label=L"$lqr_cost$")
-        # plot(log.(cost_history[:,3]), color="forestgreen", linewidth=1.0, linestyle="-", label=L"$augmented_cost$")
+        # plot(log.(10, cost_history[:,1]), color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$cost$")
+        plot(cost_history[1:iter,1], color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$cost$")
         title(L"Cost")
         #grid("on")
         xlabel("L1 Solver Iterations")
         ylabel(L"Cost")
+        yscale("log")
+        xlim(1,iter)
         legend()
 
         if parameters["linearity"]
@@ -225,6 +226,7 @@ function save_results(X_, U_, Y_, ν, cost_history, constraint_violation, optima
         xlabel(L"Iterations")
         # ylabel(L" ")
         legend()
+
         if parameters["using_constraints"]
             subplot(plot_Y, plot_X, 10)
             plot(constraint_violation[:,1], color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$U_{cv1}$")
@@ -241,11 +243,12 @@ function save_results(X_, U_, Y_, ν, cost_history, constraint_violation, optima
         end
 
         subplot(plot_Y, plot_X, 11)
-        plot(optimality_criterion, color="forestgreen", linewidth=1.0, linestyle="-", label=L"$||\nabla_{X,U} L||_{\infty}$")
+        plot(optimality_criterion[1:iter], color="forestgreen", linewidth=1.0, linestyle="-", label=L"$||\nabla_{X,U} L||_{\infty}$")
         title(L"Optimality Criterion")
         #grid("on")
         xlabel("L1 Solver Iterations")
         ylabel(L"Optimality Criterion")
+        xlim(1,iter)
         legend()
         yscale("log")
     end
@@ -255,4 +258,55 @@ function save_results(X_, U_, Y_, ν, cost_history, constraint_violation, optima
     close()
     save("result/control/" * filename*".jld", "U", U, "x0", X[:,1])
     return
+end
+
+
+
+function circular_orbit(orbit_radius, θ, μ)
+    # Compute the state [x, y, z, xd, yd, zd]
+    # for a circular orbit in the XY plane.
+    state = zeros(6)
+    state[1:3] = orbit_radius.*[cos(θ), sin(θ), 0]
+    velocity = sqrt(μ/orbit_radius)
+    state[4:6] = velocity.*[-sin(θ), cos(θ), 0]
+    return state
+end
+
+function full_to_cw(x_full)
+    μ = 3.99*10^14 # Standard gravitational parameter m^3 s^-2
+    # Convert a full state ∈ R^12 to a cw state ∈ R^6.
+    r_target = x_full[4:6]
+    rd_target = x_full[10:12]
+    # Δr = -x_full[1:3] # r_ego - r_target
+    # Δrd = -x_full[7:9] # rd_ego - rd_target
+    r_ego = r_target - x_full[1:3]
+    rd_ego = rd_target - x_full[7:9]
+
+    # define the axis of the cw frame
+    ey_cw = r_target / norm(r_target)
+    ez_cw = cross(ey_cw, rd_target)
+    ez_cw = ez_cw / norm(ez_cw)
+    ex_cw = cross(ey_cw, ez_cw)
+    R_wc = [ex_cw ey_cw ez_cw]
+    r = r_ego
+    v = rd_ego
+    ω = cross(r,v) / norm(cross(r,v))
+    # ω *= v'*(cross(cross(r,v),r)) / norm(r)
+    orbit_radius = norm(r_target)
+    ω *= sqrt(μ) / orbit_radius^2
+    ω_hat = [0 -ω[3] ω[2] ; ω[3] 0 -ω[1] ; -ω[2] ω[1] 0]
+    x_cw = zeros(6)
+    x_cw[1:3] = R_wc'*(r_ego .- r_target)
+    x_cw[4:6] = R_wc'*(rd_ego .- rd_target) - ω_hat*R_wc'*(r_ego .- r_target)
+    return x_cw
+end
+
+function rk4_step(f!, x, u, Δt)
+    # Runge-Kutta 4
+    k1 = k2 = k3 = k4 = zero(x)
+    f!(k1, x, u);        k1 *= Δt;
+    f!(k2, x + k1/2, u); k2 *= Δt;
+    f!(k3, x + k2/2, u); k3 *= Δt;
+    f!(k4, x + k3, u);   k4 *= Δt;
+    x + (k1 + 2*k2 + 2*k3 + k4)/6
 end

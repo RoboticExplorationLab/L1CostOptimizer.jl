@@ -2,34 +2,20 @@ function cw_dynamics(ẋ, x, u, parameters)
     m_ego = parameters["m_ego"]
     n_ = sqrt(parameters["μ"]/parameters["orbit_radius"]^3)
     ẋ[1:3] = x[4:6]
-    # ẋ[4] = 3*n_^2*x[1] + 2*n_*x[5] + u[1]/m_ego
-    # ẋ[5] = -2*n_*x[4] + u[2]/m_ego
-    # ẋ[6] = -n_^2*x[3] + u[3]/m_ego
     ẋ[4] =  2*n_*x[5] + u[1]/m_ego
     ẋ[5] = -2*n_*x[4] + 3*n_^2*x[2] + u[2]/m_ego
     ẋ[6] = -n_^2*x[3] + u[3]/m_ego
 end
-
-# function cw_dynamics!(ẋ,x,u)
-#     cw_dynamics!(ẋ, x, u, lin_parameters)
-# end
 
 function scaled_cw_dynamics(ẋ, x, u, parameters)
     t_ref = parameters["t_ref"]
     l_ref = parameters["l_ref"]
     n_ = sqrt(parameters["μ"]/parameters["orbit_radius"]^3) * t_ref
     ẋ[1:3] = x[4:6]
-    # ẋ[4] = 3*n_^2*x[1] + 2*n_*x[5] + u[1]
-    # ẋ[5] = -2*n_*x[4] + u[2]
-    # ẋ[6] = -n_^2*x[3] + u[3]
     ẋ[4] = 2*n_*x[5] + u[1]
     ẋ[5] = -2*n_*x[4] + 3*n_^2*x[2]+ u[2]
     ẋ[6] = -n_^2*x[3] + u[3]
 end
-
-# function scaled_cw_dynamics!(ẋ,x,u)
-#     scaled_cw_dynamics!(ẋ, x, u, lin_parameters)
-# end
 
 function scaled_non_linear_dynamics(ẋ, x, u, parameters)
     # Definition of the state
@@ -75,15 +61,11 @@ function scaled_non_linear_dynamics(ẋ, x, u, parameters)
     z_cw = z_cw / norm(z_cw)
     x_cw = cross(y_cw, z_cw)
     u_world = [x_cw y_cw z_cw]*u
-    F_ego = u_world * u_ref + gravitation_force(r_ego, "ego", parameters) ###+ drag_force(r_ego, rd_ego, "ego", parameters) # unscaled
-    F_target = gravitation_force(r_target, "target", parameters) ###+ drag_force(r_target, rd_target, "target", parameters) # unscaled
+    F_ego = u_world * u_ref + gravitation_force(r_ego, "ego", parameters) + drag_force(r_ego, rd_ego, "ego", parameters) # unscaled
+    F_target = gravitation_force(r_target, "target", parameters) + drag_force(r_target, rd_target, "target", parameters) # unscaled
     ẋ[10:12] = F_target / parameters["m_target"] / a_target_ref # scaled
     ẋ[7:9] = (F_target / parameters["m_target"] - F_ego / parameters["m_ego"]) / a_ego_ref # scaled
 end
-
-# function scaled_non_linear_dynamics!(ẋ,x,u)
-#    scaled_non_linear_dynamics!(ẋ, x, u, non_lin_parameters)
-# end
 
 function non_linear_dynamics(ẋ, x, u, parameters)
     # Definition of the state
@@ -121,15 +103,11 @@ function non_linear_dynamics(ẋ, x, u, parameters)
     z_cw = z_cw / norm(z_cw)
     x_cw = cross(y_cw, z_cw)
     u_world = [x_cw y_cw z_cw]*u
-    F_ego = u_world + gravitation_force(r_ego, "ego", parameters) ###+ drag_force(r_ego, rd_ego, "ego", parameters)
-    F_target = gravitation_force(r_target, "target", parameters) ###+ drag_force(r_target, rd_target, "target", parameters)
+    F_ego = u_world + gravitation_force(r_ego, "ego", parameters) + drag_force(r_ego, rd_ego, "ego", parameters)
+    F_target = gravitation_force(r_target, "target", parameters) + drag_force(r_target, rd_target, "target", parameters)
     ẋ[10:12] = F_target / parameters["m_target"]
     ẋ[7:9] = ẋ[10:12] - F_ego / parameters["m_ego"]
 end
-
-# function non_linear_dynamics!(ẋ,x,u)
-#     non_linear_dynamics!(ẋ, x, u, non_lin_parameters)
-# end
 
 function gravitation_force(r, id, parameters)
     μ = parameters["μ"]
@@ -143,7 +121,7 @@ function gravitation_force(r, id, parameters)
     F_0 = - μ * mass / rmag^3 * r
     J2_term = [r[1]*(6*r[3]^2 - 3/2(r[1]^2 + r[2]^2)), r[2]*(6*r[3]^2 - 3/2(r[1]^2 + r[2]^2)), r[3]*(3*r[3]^2 - 9/2(r[1]^2 + r[2]^2))]
     F_J2 = J2 / rmag^7 * J2_term
-    F = F_0 ###+ F_J2
+    F = F_0 + F_J2
     return F
 end
 

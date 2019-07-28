@@ -73,7 +73,8 @@ function l1_solver(parameters)
     U = parameters["U0"]
     Y = parameters["Y0"]
     ν = parameters["ν0"]
-    for i=1:num_iter
+    i = 1
+    while i <= num_iter
         parameters["ρ"] = min(parameters["ρ"]*1.00, 1e5) ###
         # println("i = ", i)
         # Updates
@@ -95,21 +96,22 @@ function l1_solver(parameters)
             if parameters["stage_plot"] && (i-1)%parameters["stage_plot_freq"] == 0
                 filename = "inter_" * "rho_" * string(parameters["ρ"]) * "_iter_" * string(parameters["num_iter"]) * "_Qf_" * string(parameters["Qf"][1,1]) * "_stage_" * string(i)
                 println("size(constraint_violation) = ", size(constraint_violation))
-                save_results(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, parameters)
+                save_results(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, num_iter, parameters)
             end
         end
         if optimality_criterion[i] <= parameters["stopping_criterion"]
             println("break at ", i)
             break
         end
+        i += 1
     end
-    return X, U, Y, ν, cost_history, constraint_violation, optimality_criterion
+    # println("break at ", i)
+    return X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, i-1
 end
 
 function compute_optimality_criterion(U, Y)
     return norm(U .- Y) / length(U)
 end
-
 
 function compute_lagrangian_gradient(X, U, Y, ν, parameters)
     # We compute the gradient of the scaled version of the Lagrangian
@@ -157,7 +159,6 @@ function compute_lagrangian_gradient(X, U, Y, ν, parameters)
     # println(norm(gradient, 2)/length(gradient))
     return norm(gradient, 2)/length(gradient)
 end
-
 
 function dynamics_update(X, U, Y, ν, parameters, problem, solver)
     N = parameters["N"]
