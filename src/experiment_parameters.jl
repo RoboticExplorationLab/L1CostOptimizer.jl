@@ -20,7 +20,7 @@ function define_lin_constrained_parameters()
     # mass
     m_ego = 4.6
 
-    parameters = Dict("num_iter" => 30,# number of iteration of ADMM
+    parameters = Dict("num_iter" => 100,# number of iteration of ADMM
                   "ilqr_solver_iter" => 1, # number of iterations of the inner solver (ilqr = unconstrained)
                   "al_solver_iter" => 100, # number of iterations of the inner solver (al = constrained)
                   "scale_y" => 1.1, # helpful parameter for fast convergence
@@ -52,7 +52,7 @@ function define_lin_constrained_parameters()
                   "stage_plot" => false, # using constraints on control
                   "stage_plot_freq" => 5, # using constraints on control
                   "plot_format" => "eps", # using constraints on control
-                  "timing" => true, # timing the function
+                  "timing" => false, # timing the function
                   "linearity" => true, # using linear dynamics
                   "u_min" => -5e-2, # lower bound on u
                   "u_max" => 5e-2, # upper bound on u

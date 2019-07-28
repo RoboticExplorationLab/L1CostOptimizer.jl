@@ -1,7 +1,7 @@
 include("cost.jl")
 include("dynamics.jl")
-include("experiments.jl")
-include("parameters.jl")
+include("experiment.jl")
+include("parameter_scaling.jl")
 include("solver.jl")
 include("utils.jl")
 

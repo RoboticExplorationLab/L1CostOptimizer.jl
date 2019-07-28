@@ -99,13 +99,14 @@ function l1_solver(parameters)
                 save_results(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, num_iter, parameters)
             end
         end
-        if optimality_criterion[i] <= parameters["stopping_criterion"]
-            println("break at ", i)
+        i += 1
+        if optimality_criterion[i-1] <= parameters["stopping_criterion"]
+            println("break at ", i-1)
             break
         end
-        i += 1
     end
-    # println("break at ", i)
+    num_lqr = (i-1) * parameters["al_solver_iter"]
+    println("Number of LQR passes = ", num_lqr)
     return X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, i-1
 end
 

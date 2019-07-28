@@ -7,12 +7,13 @@ using PyPlot
 
 include("cost.jl")
 include("dynamics.jl")
-include("experiments.jl")
+include("experiment.jl")
 include("experiment_parameters.jl")
-include("parameters.jl")
+include("parameter_scaling.jl")
 include("solver.jl")
 include("test.jl")
 include("utils.jl")
+include("visualization.jl")
 
 
 
