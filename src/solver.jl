@@ -16,13 +16,14 @@ function l1_solver(parameters)
             scaled_cw_dynamics(ẋ, x, u, parameters)
         end
         model = TrajectoryOptimization.Model(scaled_cw_dynamics!, n, m)
+        discretized_model = midpoint(model)
     elseif !parameters["linearity"]
         function scaled_non_linear_dynamics!(ẋ,x,u)
             scaled_non_linear_dynamics(ẋ, x, u, parameters)
         end
         model = TrajectoryOptimization.Model(scaled_non_linear_dynamics!, n, m)
+        discretized_model = rk3(model)
     end
-    discretized_model = rk4(model)
     # TVcost initialization
     ρ = parameters["ρ"]
     R = ρ * Matrix{Float64}(I, m, m)
@@ -53,7 +54,6 @@ function l1_solver(parameters)
         problem_constraints = TrajectoryOptimization.Constraints([bound_constraints], N)
     end
     problem = Problem(discretized_model, objective, constraints=problem_constraints, x0=x0, N=N, tf=tf)
-
     initial_controls!(problem, parameters["U0"])
 
     # Solver initialization
@@ -74,14 +74,19 @@ function l1_solver(parameters)
     Y = parameters["Y0"]
     ν = parameters["ν0"]
     i = 1
+    num_lqr = 0
     while i <= num_iter
         parameters["ρ"] = min(parameters["ρ"]*1.00, 1e5) ###
-        # println("i = ", i)
         # Updates
         # parameters["scale_y"] = 1 + 0.97*(parameters["scale_y"] - 1)
         X, U = dynamics_update(X, U, Y, ν, parameters, problem, solver)
         Y = soft_threshold_update(U, Y, ν, parameters)
         ν = dual_update(U, Y, ν, parameters) ###
+        # if i == 1
+        #     scale_ν = parameters["α"] / norm(ν, Inf)
+        #     ν *= scale_ν
+        # end
+        num_lqr += solver.stats[:iterations]
         optimality_criterion[i] = compute_optimality_criterion(U, Y)
         if !parameters["timing"]
             constraint_violation[i,:] = compute_constraint_violation(U, Y, parameters)
@@ -95,7 +100,6 @@ function l1_solver(parameters)
             println("uy, C, lqr C, augmented C = ", [uy, cost, lqr_cost, augmented_cost])
             if parameters["stage_plot"] && (i-1)%parameters["stage_plot_freq"] == 0
                 filename = "inter_" * "rho_" * string(parameters["ρ"]) * "_iter_" * string(parameters["num_iter"]) * "_Qf_" * string(parameters["Qf"][1,1]) * "_stage_" * string(i)
-                println("size(constraint_violation) = ", size(constraint_violation))
                 save_results(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, num_iter, parameters)
             end
         end
@@ -105,7 +109,6 @@ function l1_solver(parameters)
             break
         end
     end
-    num_lqr = (i-1) * parameters["al_solver_iter"]
     println("Number of LQR passes = ", num_lqr)
     return X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, i-1
 end
@@ -176,6 +179,7 @@ function dynamics_update(X, U, Y, ν, parameters, problem, solver)
     initial_controls!(problem, U)
     # Solving the problem
     solve!(problem, solver)
+    println("***** solver.stats[:iterations]", solver.stats[:iterations])
     X = to_array(problem.X)
     U = to_array(problem.U)
     return X, U

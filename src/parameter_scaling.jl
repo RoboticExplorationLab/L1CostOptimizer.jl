@@ -9,8 +9,8 @@ function scale_lin_parameters(parameters)
     l_ref = max(norm(x0[1:3] - xf[1:3]), 1)
     v_ref = max(norm(x0[4:6] - xf[4:6]), 1)
     t_ref = l_ref / v_ref
-    # a_ref = l_ref / (t_ref*Δt)
-    a_ref = l_ref / (t_ref^2)
+    a_ref = l_ref / (t_ref^2) ####################################
+    # a_ref = l_ref / (t_ref^2) ####################################
     u_ref = a_ref * m_ego
     # Scaling
     tf /= t_ref
@@ -36,25 +36,26 @@ function scale_lin_parameters(parameters)
     parameters["u_ref"] = u_ref
     parameters["u_min"] /= u_ref
     parameters["u_max"] /= u_ref
+    return parameters
 end
 
-function update_scaling_lin_parameters(x0, parameters)
-    t_ref = parameters["t_ref"]
-    l_ref = parameters["l_ref"]
-    v_ref = parameters["v_ref"]
-    u_ref = parameters["u_ref"]
-
-    # rescale everything to the origin
-    parameters["Δt"] *= t_ref
-    parameters["tf"] *= t_ref
-    parameters["xf"][1:3] *= l_ref
-    parameters["xf"][4:6] *= v_ref
-    parameters["u_min"] *= u_ref
-    parameters["u_max"] *= u_ref
-
-    parameters["x0"] = x0
-    scale_lin_parameters(parameters)
-end
+# function update_scaling_lin_parameters(x0, parameters)
+#     t_ref = parameters["t_ref"]
+#     l_ref = parameters["l_ref"]
+#     v_ref = parameters["v_ref"]
+#     u_ref = parameters["u_ref"]
+#
+#     # rescale everything to the origin
+#     parameters["Δt"] *= t_ref
+#     parameters["tf"] *= t_ref
+#     parameters["xf"][1:3] *= l_ref
+#     parameters["xf"][4:6] *= v_ref
+#     parameters["u_min"] *= u_ref
+#     parameters["u_max"] *= u_ref
+#
+#     parameters["x0"] = x0
+#     scale_lin_parameters(parameters)
+# end
 
 function scale_non_lin_parameters(parameters)
     μ = parameters["μ"]
@@ -67,21 +68,26 @@ function scale_non_lin_parameters(parameters)
     # Scale
     l_ego_ref = max(norm(x0[1:3] - xf[1:3]), 1)
     l_target_ref =  norm(x0[4:6])
-    v_ego_ref = max(norm(x0[7:9] - xf[7:9]), 1)
-    v_target_ref = sqrt(μ/l_target_ref)
-    t_ref = l_ego_ref / v_ego_ref
+    # v_ego_ref = max(norm(x0[7:9] - xf[7:9]), 1)
+    v_target_ref = 3*sqrt(μ/l_target_ref)
+    t_ref_target = l_target_ref / v_target_ref
+    t_ref = t_ref_target
+    v_ego_ref = l_ego_ref / t_ref
     a_ego_ref = l_ego_ref / (t_ref^2)
-    a_target_ref = μ/l_target_ref^2
+    a_target_ref = l_target_ref / (t_ref^2)
     u_ref = a_ego_ref * m_ego
 
-    # println("t_ref = ", t_ref)
-    # println("l_ego_ref = ", l_ego_ref)
-    # println("l_target_ref = ", l_target_ref)
-    # println("v_ego_ref = ", v_ego_ref)
-    # println("v_target_ref = ", v_target_ref)
-    # println("a_ego_ref = ", a_ego_ref)
-    # println("a_target_ref = ", a_target_ref)
-    # println("u_ref = ", u_ref)
+    println("t_ref = ", t_ref)
+    println("t_ref_target = ", t_ref_target)
+    println("l_ego_ref = ", l_ego_ref)
+    println("l_target_ref = ", l_target_ref)
+    println("v_ego_ref = ", v_ego_ref)
+    println("v_target_ref = ", v_target_ref)
+    println("a_ego_ref = ", a_ego_ref)
+    println("a_target_ref = ", a_target_ref)
+    println("μ/l_target_ref^2 = ", μ/l_target_ref^2)
+    println("l_target_ref / (t_ref^2)  = ", l_target_ref / (t_ref^2) )
+    println("u_ref = ", u_ref)
     # Scaling
     tf /= t_ref
     Δt /= t_ref
@@ -108,6 +114,7 @@ function scale_non_lin_parameters(parameters)
     parameters["u_ref"] = u_ref
     parameters["u_min"] /= u_ref
     parameters["u_max"] /= u_ref
+    return parameters
 end
 
 # function define_lin_parameters()

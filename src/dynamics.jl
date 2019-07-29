@@ -44,11 +44,13 @@ function scaled_non_linear_dynamics(ẋ, x, u, parameters)
     l_target_ref = parameters["l_target_ref"]
     v_ego_ref = parameters["v_ego_ref"]
     v_target_ref = parameters["v_target_ref"]
-    a_ego_ref = parameters["a_ego_ref"]
+    a_ego_ref = l_ego_ref / t_ref^2 ####parameters["a_ego_ref"]
     a_target_ref = parameters["a_target_ref"]
     u_ref = parameters["u_ref"]
 
-    ẋ[1:6] = x[7:12] # scaled
+    ẋ[1:6] = x[7:12] # scaled ###
+    # ẋ[4:6] = x[10:12]*parameters["v_target_ref"] / parameters["l_target_ref"]
+    # ẋ[1:3] = x[7:9]*parameters["l_ego_ref"] / parameters["l_ego_ref"]
     r_ego = x[4:6] * l_target_ref - x[1:3] * l_ego_ref # unscaled
     rd_ego = x[10:12] * v_target_ref - x[7:9] * v_ego_ref # unscaled
     r_target = x[4:6] * l_target_ref
@@ -121,7 +123,7 @@ function gravitation_force(r, id, parameters)
     F_0 = - μ * mass / rmag^3 * r
     J2_term = [r[1]*(6*r[3]^2 - 3/2(r[1]^2 + r[2]^2)), r[2]*(6*r[3]^2 - 3/2(r[1]^2 + r[2]^2)), r[3]*(3*r[3]^2 - 9/2(r[1]^2 + r[2]^2))]
     F_J2 = J2 / rmag^7 * J2_term
-    F = F_0 + F_J2
+    F = F_0### + F_J2
     return F
 end
 

@@ -20,9 +20,9 @@ function define_lin_constrained_parameters()
     # mass
     m_ego = 4.6
 
-    parameters = Dict("num_iter" => 100,# number of iteration of ADMM
+    parameters = Dict("num_iter" => 300,# number of iteration of ADMM
                   "ilqr_solver_iter" => 1, # number of iterations of the inner solver (ilqr = unconstrained)
-                  "al_solver_iter" => 100, # number of iterations of the inner solver (al = constrained)
+                  "al_solver_iter" => 5, # number of iterations of the inner solver (al = constrained)
                   "scale_y" => 1.1, # helpful parameter for fast convergence
                   "stopping_criterion" => 1e-3, # stops the algo when ||U-Y||_2/dim(U) <= stopping_criterion
                   "N" => N, # horizon
@@ -48,21 +48,21 @@ function define_lin_constrained_parameters()
                   "u_ref" => 1.0, # reference control for ego
                   "using_constraints" => true, # using constraints on control
                   "using_final_constraints" => true, # using constraints on control
-                  "complete_results" => true, # using constraints on control
+                  "complete_results" => false, # using constraints on control
                   "stage_plot" => false, # using constraints on control
                   "stage_plot_freq" => 5, # using constraints on control
                   "plot_format" => "eps", # using constraints on control
                   "timing" => false, # timing the function
                   "linearity" => true, # using linear dynamics
-                  "u_min" => -5e-2, # lower bound on u
-                  "u_max" => 5e-2, # upper bound on u
+                  "u_min" => -5e-3, # lower bound on u
+                  "u_max" => 5e-3, # upper bound on u
                   "Q" => 0.0 * Matrix{Float64}(I, n, n), # Quadratic stage cost for states (n,n)
                   "R" => 1e-40 * Matrix{Float64}(I, m, m), # Quadratic stage cost for controls (m,m)
                   "H" => zeros(m, n), # Quadratic Cross-coupling for state and controls (m,n)
                   "q" => zeros(n), # Linear term on states (n,)
                   "r" => zeros(m), # Linear term on controls (m,)
                   "c" => 0.0, # constant term
-                  "Qf" => 100.0 * Matrix{Float64}(I, n, n), # Quadratic final cost for terminal state (n,n)
+                  "Qf" => 1000.0 * Matrix{Float64}(I, n, n), # Quadratic final cost for terminal state (n,n)
                   "qf" => zeros(n), # Linear term on terminal state (n,)
                   "cf" => 0.0, # constant term (terminal)
                   "μ" => μ, # Standard gravitational parameter m^3 s^-2
@@ -95,9 +95,9 @@ function define_lin_unconstrained_parameters()
     # mass
     m_ego = 4.6
 
-    parameters = Dict("num_iter" => 200,#120, # number of iteration of ADMM
+    parameters = Dict("num_iter" => 300,#120, # number of iteration of ADMM
                   "ilqr_solver_iter" => 1, # number of iterations of the inner solver (ilqr = unconstrained)
-                  "al_solver_iter" => 100, # number of iterations of the inner solver (al = constrained)
+                  "al_solver_iter" => 2, # number of iterations of the inner solver (al = constrained)
                   "scale_y" => 1.1, # helpful parameter for fast convergence
                   "stopping_criterion" => 1e-4, # stops the algo when ||U-Y||_2/dim(U) <= stopping_criterion
                   "N" => N, # horizon
@@ -123,21 +123,21 @@ function define_lin_unconstrained_parameters()
                   "u_ref" => 1.0, # reference control for ego
                   "using_constraints" => false, # using constraints on control
                   "using_final_constraints" => false, # using constraints on control /!\ cannot be enforced using ILQR
-                  "complete_results" => true, # using constraints on control
-                  "stage_plot" => true, # using constraints on control
-                  "stage_plot_freq" => 100, # using constraints on control
+                  "complete_results" => false, # using constraints on control
+                  "stage_plot" => false, # using constraints on control
+                  "stage_plot_freq" => 5, # using constraints on control
                   "plot_format" => "eps", # using constraints on control
                   "timing" => false, # timing the function
                   "linearity" => true, # using linear dynamics
-                  "u_min" => -2e-1, # lower bound on u
-                  "u_max" => 2e-1, # upper bound on u
+                  "u_min" => -5e-3, # lower bound on u
+                  "u_max" => 5e-3, # upper bound on u
                   "Q" => 0.0 * Matrix{Float64}(I, n, n), # Quadratic stage cost for states (n,n)
                   "R" => 1e-40 * Matrix{Float64}(I, m, m), # Quadratic stage cost for controls (m,m)
                   "H" => zeros(m, n), # Quadratic Cross-coupling for state and controls (m,n)
                   "q" => zeros(n), # Linear term on states (n,)
                   "r" => zeros(m), # Linear term on controls (m,)
                   "c" => 0.0, # constant term
-                  "Qf" => 1000.0 * Matrix{Float64}(I, n, n), # Quadratic final cost for terminal state (n,n)
+                  "Qf" => 10000.0 * Matrix{Float64}(I, n, n), # Quadratic final cost for terminal state (n,n)
                   "qf" => zeros(n), # Linear term on terminal state (n,)
                   "cf" => 0.0, # constant term (terminal)
                   "μ" => μ, # Standard gravitational parameter m^3 s^-2
@@ -150,7 +150,6 @@ end
 
 function define_non_lin_unconstrained_parameters()
     μ = 3.99*10^14 # Standard gravitational parameter m^3 s^-2
-
     a = 6731.0*10^3 # semi major axis m
     alt = 5e5 # altitude
     orbit_radius = a+alt
@@ -175,7 +174,7 @@ function define_non_lin_unconstrained_parameters()
     m_ego = 4.6 # kg
     m_target = m_ego
 
-    parameters = Dict("num_iter" => 170, # number of iteration of ADMM
+    parameters = Dict("num_iter" => 300, # number of iteration of ADMM
                   "ilqr_solver_iter" => 1, # number of iterations of the inner solver (ilqr = unconstrained)
                   "al_solver_iter" => 2, # number of iterations of the inner solver (al = constrained
                   "scale_y" => 1.1, # helpful parameter for fast convergence
@@ -206,14 +205,14 @@ function define_non_lin_unconstrained_parameters()
                   "u_ref" => 1.0, # reference control for ego
                   "using_constraints" => false, # using constraints on control
                   "using_final_constraints" => false, # using constraints on control
-                  "complete_results" => true, # using constraints on control
-                  "stage_plot" => true, # using constraints on control
-                  "stage_plot_freq" => 50, # using constraints on control
+                  "complete_results" => false, # using constraints on control
+                  "stage_plot" => false, # using constraints on control
+                  "stage_plot_freq" => 5, # using constraints on control
                   "plot_format" => "eps", # using constraints on control
                   "timing" => false, # timing the function
                   "linearity" => false, # using non linear dynamics
-                  "u_min" => -2e-1, # lower bound on u
-                  "u_max" => 2e-1, # upper bound on u
+                  "u_min" => -5e-3, # lower bound on u
+                  "u_max" => 5e-3, # upper bound on u
                   "Q" => 0.0 * Matrix{Float64}(I, n, n), # Quadratic stage cost for states (n,n)
                   "R" => 1e-40 * Matrix{Float64}(I, m, m), # Quadratic stage cost for controls (m,m)
                   "H" => zeros(m, n), # Quadratic Cross-coupling for state and controls (m,n)
@@ -270,9 +269,9 @@ function define_non_lin_constrained_parameters()
 
     # ν0 = zeros(m, N-1)
     # ν0[2,:] = 0.96*ones(N-1)
-    parameters = Dict("num_iter" => 200, # number of iteration of ADMM
+    parameters = Dict("num_iter" => 300, # number of iteration of ADMM
                   "ilqr_solver_iter" => 1, # number of iterations of the inner solver (ilqr = unconstrained)
-                  "al_solver_iter" => 2, # number of iterations of the inner solver (al = constrained)
+                  "al_solver_iter" => 5, # number of iterations of the inner solver (al = constrained)
                   "scale_y" => 1.5, # helpful parameter for fast convergence
                   "stopping_criterion" => 1e-3, # stops the algo when ||U-Y||_2/dim(U) <= stopping_criterion
                   "N" => N, # horizon
@@ -301,14 +300,14 @@ function define_non_lin_constrained_parameters()
                   "u_ref" => 1.0, # reference control for ego
                   "using_constraints" => true, # using constraints on control
                   "using_final_constraints" => false, # using constraints on control
-                  "complete_results" => true, # using constraints on control
-                  "stage_plot" => true, # using constraints on control
+                  "complete_results" => false, # using constraints on control
+                  "stage_plot" => false, # using constraints on control
                   "stage_plot_freq" => 5, # using constraints on control
                   "plot_format" => "eps", # using constraints on control
                   "timing" => false, # timing the function
                   "linearity" => false, # using non linear dynamics
-                  "u_min" => -5e-2, # lower bound on u
-                  "u_max" => 5e-2, # upper bound on u
+                  "u_min" => -5e-3, # lower bound on u
+                  "u_max" => 5e-3, # upper bound on u
                   "Q" => 0.0 * Matrix{Float64}(I, n, n), # Quadratic stage cost for states (n,n)
                   "R" => 1e-40 * Matrix{Float64}(I, m, m), # Quadratic stage cost for controls (m,m)
                   "H" => zeros(m, n), # Quadratic Cross-coupling for state and controls (m,n)

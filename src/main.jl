@@ -18,25 +18,25 @@ include("visualization.jl")
 
 
 
-# P = [10.0^i for i=-0:-0]
-# stopping_criterion = 1e-4
-# for ρ in P
-#     non_lin_cons_example(ρ, stopping_criterion)
-# end
-#
-#
-# P = [10.0^i for i=-0:-0]
-# stopping_criterion = 1e-5
-# for ρ in P
-#     non_lin_uncons_example(ρ, stopping_criterion)
-# end
+P = [10.0^i for i=2:2]
+stopping_criterion = 1e-6
+for ρ in P
+    non_lin_cons_example(ρ, stopping_criterion)
+end
 
 
-# P = [10.0^i for i=-1:-1]
-# stopping_criterion = 1e-4
-# for ρ in P
-#     lin_uncons_example(ρ, stopping_criterion)
-# end
+P = [10.0^i for i=2:2]
+stopping_criterion = 5e-7
+for ρ in P
+    non_lin_uncons_example(ρ, stopping_criterion)
+end
+
+
+P = [10.0^i for i=-0:-0]
+stopping_criterion = 5e-5
+for ρ in P
+    lin_uncons_example(ρ, stopping_criterion)
+end
 
 
 P = [10.0^i for i=-0:-0]
@@ -45,6 +45,11 @@ for ρ in P
     lin_cons_example(ρ, stopping_criterion)
 end
 
+
+# test_linear_dynamics_scaling()
+# test_non_linear_dynamics_scaling()
+test_dynamics_consistency()
+# 199 92 108 258
 
 # function gradient_todorov(prob::Problem,solver::iLQRSolver)
 #
@@ -68,3 +73,4 @@ end
 # # logs = run_experiments(lin_parameters)
 # logs = run_experiments(lin_parameters)
 #
+# solver.stats["iteration"]

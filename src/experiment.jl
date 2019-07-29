@@ -13,12 +13,13 @@ function lin_cons_example(ρ, stopping_criterion)
     println("x0_cw = ", x0_cw)
 
     # Scale the parameters of the linear model
-    scale_lin_parameters(lin_cons_parameters)
+    lin_cons_parameters = scale_lin_parameters(lin_cons_parameters)
 
     # Compute the control sequence
     X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, iter = l1_solver(lin_cons_parameters)
-    filename = "lin_cons_" * "_rho_" * string(lin_cons_parameters["ρ"])
-    filename *= "_iter_" * string(lin_cons_parameters["num_iter"]) * "_Qf_" * string(lin_cons_parameters["Qf"][1,1])
+    # filename = "lin_cons_" * "_rho_" * string(lin_cons_parameters["ρ"])
+    # filename *= "_iter_" * string(lin_cons_parameters["num_iter"]) * "_Qf_" * string(lin_cons_parameters["Qf"][1,1])
+    filename = "lin_cons"
     save_results(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, iter, lin_cons_parameters)
 end
 
@@ -37,12 +38,13 @@ function lin_uncons_example(ρ, stopping_criterion)
     println("x0_cw = ", x0_cw)
 
     # Scale the parameters of the linear model
-    scale_lin_parameters(lin_uncons_parameters)
+    lin_uncons_parameters = scale_lin_parameters(lin_uncons_parameters)
 
     # Compute the control sequence
     X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, iter = l1_solver(lin_uncons_parameters)
-    filename = "lin_uncons_" * "_rho_" * string(lin_uncons_parameters["ρ"])
-    filename *= "_iter_" * string(lin_uncons_parameters["num_iter"]) * "_Qf_" * string(lin_uncons_parameters["Qf"][1,1])
+    # filename = "lin_uncons_" * "_rho_" * string(lin_uncons_parameters["ρ"])
+    # filename *= "_iter_" * string(lin_uncons_parameters["num_iter"]) * "_Qf_" * string(lin_uncons_parameters["Qf"][1,1])
+    filename = "lin_uncons"
     save_results(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, iter, lin_uncons_parameters)
 end
 
@@ -59,12 +61,14 @@ function non_lin_uncons_example(ρ, stopping_criterion)
     println("x0_full = ", x0_full)
 
     # Scale the parameters of the linear model
-    scale_non_lin_parameters(non_lin_uncons_parameters)
+    non_lin_uncons_parameters = scale_non_lin_parameters(non_lin_uncons_parameters)
+    println("non_lin_uncons_parameters[x0] = ", non_lin_uncons_parameters["x0"])
 
     # Compute the control sequence
     X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, iter = l1_solver(non_lin_uncons_parameters)
-    filename = "non_lin_uncons_" * "_rho_" * string(non_lin_uncons_parameters["ρ"])
-    filename *= "_iter_" * string(non_lin_uncons_parameters["num_iter"]) * "_Qf_" * string(non_lin_uncons_parameters["Qf"][1,1])
+    # filename = "non_lin_uncons_" * "_rho_" * string(non_lin_uncons_parameters["ρ"])
+    # filename *= "_iter_" * string(non_lin_uncons_parameters["num_iter"]) * "_Qf_" * string(non_lin_uncons_parameters["Qf"][1,1])
+    filename = "non_lin_uncons"
     save_results(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, iter, non_lin_uncons_parameters)
 end
 
@@ -81,11 +85,12 @@ function non_lin_cons_example(ρ, stopping_criterion)
     println("x0_full = ", x0_full)
 
     # Scale the parameters of the linear model
-    scale_non_lin_parameters(non_lin_cons_parameters)
+    non_lin_cons_parameters = scale_non_lin_parameters(non_lin_cons_parameters)
 
     # Compute the control sequence
     X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, iter = l1_solver(non_lin_cons_parameters)
-    filename = "non_lin_cons_" * "_rho_" * string(non_lin_cons_parameters["ρ"])
-    filename *= "_iter_" * string(non_lin_cons_parameters["num_iter"]) * "_Qf_" * string(non_lin_cons_parameters["Qf"][1,1])
+    # filename = "non_lin_cons_" * "_rho_" * string(non_lin_cons_parameters["ρ"])
+    # filename *= "_iter_" * string(non_lin_cons_parameters["num_iter"]) * "_Qf_" * string(non_lin_cons_parameters["Qf"][1,1])
+    filename = "non_lin_cons"
     save_results(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, iter, non_lin_cons_parameters)
 end
