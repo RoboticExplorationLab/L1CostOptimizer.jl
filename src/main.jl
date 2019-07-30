@@ -3,7 +3,8 @@ using JLD
 using LinearAlgebra
 using TrajectoryOptimization
 using PartedArrays
-using PyPlot
+using PGFPlots
+# using PyPlot
 
 include("cost.jl")
 include("dynamics.jl")
@@ -14,33 +15,31 @@ include("solver.jl")
 include("test.jl")
 include("utils.jl")
 include("visualization.jl")
+include("visualization_pgf.jl")
 
 
 
 
-P = [10.0^i for i=2:2]
-stopping_criterion = 1e-6
+P = [10.0^i for i=1:1]
+stopping_criterion = 5e-6
 for ρ in P
     non_lin_cons_example(ρ, stopping_criterion)
 end
 
-
-P = [10.0^i for i=2:2]
-stopping_criterion = 5e-7
+P = [10.0^i for i=-1:-1]
+stopping_criterion = 6e-5#5e-7
 for ρ in P
     non_lin_uncons_example(ρ, stopping_criterion)
 end
 
-
-P = [10.0^i for i=-0:-0]
-stopping_criterion = 5e-5
+P = [10.0^i for i=-2:-2]
+stopping_criterion = 4.5e-3#1e-9#5e-5
 for ρ in P
     lin_uncons_example(ρ, stopping_criterion)
 end
 
-
-P = [10.0^i for i=-0:-0]
-stopping_criterion = 1e-4
+P = [10.0^i for i=-1:-1]
+stopping_criterion = 4e-4#1e-9#1e-4
 for ρ in P
     lin_cons_example(ρ, stopping_criterion)
 end
@@ -48,7 +47,7 @@ end
 
 # test_linear_dynamics_scaling()
 # test_non_linear_dynamics_scaling()
-test_dynamics_consistency()
+# test_dynamics_consistency()
 # 199 92 108 258
 
 # function gradient_todorov(prob::Problem,solver::iLQRSolver)

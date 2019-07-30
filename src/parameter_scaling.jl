@@ -77,17 +77,15 @@ function scale_non_lin_parameters(parameters)
     a_target_ref = l_target_ref / (t_ref^2)
     u_ref = a_ego_ref * m_ego
 
-    println("t_ref = ", t_ref)
-    println("t_ref_target = ", t_ref_target)
-    println("l_ego_ref = ", l_ego_ref)
-    println("l_target_ref = ", l_target_ref)
-    println("v_ego_ref = ", v_ego_ref)
-    println("v_target_ref = ", v_target_ref)
-    println("a_ego_ref = ", a_ego_ref)
-    println("a_target_ref = ", a_target_ref)
-    println("μ/l_target_ref^2 = ", μ/l_target_ref^2)
-    println("l_target_ref / (t_ref^2)  = ", l_target_ref / (t_ref^2) )
-    println("u_ref = ", u_ref)
+    # println("t_ref = ", t_ref)
+    # println("t_ref_target = ", t_ref_target)
+    # println("l_ego_ref = ", l_ego_ref)
+    # println("l_target_ref = ", l_target_ref)
+    # println("v_ego_ref = ", v_ego_ref)
+    # println("v_target_ref = ", v_target_ref)
+    # println("a_ego_ref = ", a_ego_ref)
+    # println("a_target_ref = ", a_target_ref)
+    # println("u_ref = ", u_ref)
     # Scaling
     tf /= t_ref
     Δt /= t_ref

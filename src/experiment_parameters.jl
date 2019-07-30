@@ -48,9 +48,9 @@ function define_lin_constrained_parameters()
                   "u_ref" => 1.0, # reference control for ego
                   "using_constraints" => true, # using constraints on control
                   "using_final_constraints" => true, # using constraints on control
-                  "complete_results" => false, # using constraints on control
+                  "complete_results" => true, # using constraints on control
                   "stage_plot" => false, # using constraints on control
-                  "stage_plot_freq" => 5, # using constraints on control
+                  "stage_plot_freq" => 10, # using constraints on control
                   "plot_format" => "eps", # using constraints on control
                   "timing" => false, # timing the function
                   "linearity" => true, # using linear dynamics
@@ -123,9 +123,9 @@ function define_lin_unconstrained_parameters()
                   "u_ref" => 1.0, # reference control for ego
                   "using_constraints" => false, # using constraints on control
                   "using_final_constraints" => false, # using constraints on control /!\ cannot be enforced using ILQR
-                  "complete_results" => false, # using constraints on control
+                  "complete_results" => true, # using constraints on control
                   "stage_plot" => false, # using constraints on control
-                  "stage_plot_freq" => 5, # using constraints on control
+                  "stage_plot_freq" => 10, # using constraints on control
                   "plot_format" => "eps", # using constraints on control
                   "timing" => false, # timing the function
                   "linearity" => true, # using linear dynamics
@@ -177,7 +177,7 @@ function define_non_lin_unconstrained_parameters()
     parameters = Dict("num_iter" => 300, # number of iteration of ADMM
                   "ilqr_solver_iter" => 1, # number of iterations of the inner solver (ilqr = unconstrained)
                   "al_solver_iter" => 2, # number of iterations of the inner solver (al = constrained
-                  "scale_y" => 1.1, # helpful parameter for fast convergence
+                  "scale_y" => 1.5, # helpful parameter for fast convergence
                   "stopping_criterion" => 1e-3, # stops the algo when ||U-Y||_2/dim(U) <= stopping_criterion
                   "N" => N, # horizon
                   "n"=> n, # state size
@@ -205,9 +205,9 @@ function define_non_lin_unconstrained_parameters()
                   "u_ref" => 1.0, # reference control for ego
                   "using_constraints" => false, # using constraints on control
                   "using_final_constraints" => false, # using constraints on control
-                  "complete_results" => false, # using constraints on control
+                  "complete_results" => true, # using constraints on control
                   "stage_plot" => false, # using constraints on control
-                  "stage_plot_freq" => 5, # using constraints on control
+                  "stage_plot_freq" => 10, # using constraints on control
                   "plot_format" => "eps", # using constraints on control
                   "timing" => false, # timing the function
                   "linearity" => false, # using non linear dynamics
@@ -272,7 +272,7 @@ function define_non_lin_constrained_parameters()
     parameters = Dict("num_iter" => 300, # number of iteration of ADMM
                   "ilqr_solver_iter" => 1, # number of iterations of the inner solver (ilqr = unconstrained)
                   "al_solver_iter" => 5, # number of iterations of the inner solver (al = constrained)
-                  "scale_y" => 1.5, # helpful parameter for fast convergence
+                  "scale_y" => 1.1, # helpful parameter for fast convergence
                   "stopping_criterion" => 1e-3, # stops the algo when ||U-Y||_2/dim(U) <= stopping_criterion
                   "N" => N, # horizon
                   "n"=> n, # state size
@@ -300,9 +300,9 @@ function define_non_lin_constrained_parameters()
                   "u_ref" => 1.0, # reference control for ego
                   "using_constraints" => true, # using constraints on control
                   "using_final_constraints" => false, # using constraints on control
-                  "complete_results" => false, # using constraints on control
+                  "complete_results" => true, # using constraints on control
                   "stage_plot" => false, # using constraints on control
-                  "stage_plot_freq" => 5, # using constraints on control
+                  "stage_plot_freq" => 10, # using constraints on control
                   "plot_format" => "eps", # using constraints on control
                   "timing" => false, # timing the function
                   "linearity" => false, # using non linear dynamics

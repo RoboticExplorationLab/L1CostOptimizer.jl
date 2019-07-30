@@ -21,6 +21,7 @@ function lin_cons_example(ρ, stopping_criterion)
     # filename *= "_iter_" * string(lin_cons_parameters["num_iter"]) * "_Qf_" * string(lin_cons_parameters["Qf"][1,1])
     filename = "lin_cons"
     save_results(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, iter, lin_cons_parameters)
+    save_results_pyplot(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, iter, lin_cons_parameters)
 end
 
 function lin_uncons_example(ρ, stopping_criterion)
@@ -46,6 +47,7 @@ function lin_uncons_example(ρ, stopping_criterion)
     # filename *= "_iter_" * string(lin_uncons_parameters["num_iter"]) * "_Qf_" * string(lin_uncons_parameters["Qf"][1,1])
     filename = "lin_uncons"
     save_results(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, iter, lin_uncons_parameters)
+    save_results_pyplot(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, iter, lin_uncons_parameters)
 end
 
 function non_lin_uncons_example(ρ, stopping_criterion)
@@ -70,6 +72,7 @@ function non_lin_uncons_example(ρ, stopping_criterion)
     # filename *= "_iter_" * string(non_lin_uncons_parameters["num_iter"]) * "_Qf_" * string(non_lin_uncons_parameters["Qf"][1,1])
     filename = "non_lin_uncons"
     save_results(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, iter, non_lin_uncons_parameters)
+    save_results_pyplot(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, iter, non_lin_uncons_parameters)
 end
 
 function non_lin_cons_example(ρ, stopping_criterion)
@@ -93,4 +96,5 @@ function non_lin_cons_example(ρ, stopping_criterion)
     # filename *= "_iter_" * string(non_lin_cons_parameters["num_iter"]) * "_Qf_" * string(non_lin_cons_parameters["Qf"][1,1])
     filename = "non_lin_cons"
     save_results(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, iter, non_lin_cons_parameters)
+    save_results_pyplot(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, iter, non_lin_cons_parameters)
 end

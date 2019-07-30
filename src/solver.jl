@@ -78,14 +78,17 @@ function l1_solver(parameters)
     while i <= num_iter
         parameters["ρ"] = min(parameters["ρ"]*1.00, 1e5) ###
         # Updates
-        # parameters["scale_y"] = 1 + 0.97*(parameters["scale_y"] - 1)
+        # parameters["scale_y"] = 1 + 0.90*(parameters["scale_y"] - 1)
         X, U = dynamics_update(X, U, Y, ν, parameters, problem, solver)
         Y = soft_threshold_update(U, Y, ν, parameters)
         ν = dual_update(U, Y, ν, parameters) ###
-        # if i == 1
-        #     scale_ν = parameters["α"] / norm(ν, Inf)
-        #     ν *= scale_ν
-        # end
+        if i == 1
+            scale_ν = parameters["α"] ./ [norm(ν[i, :], Inf) for i=1:m]
+            ν = ν .* scale_ν
+        elseif i <= 30
+            scale_ν = parameters["α"] / norm(ν, Inf)
+            ν = ν .* scale_ν
+        end
         num_lqr += solver.stats[:iterations]
         optimality_criterion[i] = compute_optimality_criterion(U, Y)
         if !parameters["timing"]
@@ -101,6 +104,7 @@ function l1_solver(parameters)
             if parameters["stage_plot"] && (i-1)%parameters["stage_plot_freq"] == 0
                 filename = "inter_" * "rho_" * string(parameters["ρ"]) * "_iter_" * string(parameters["num_iter"]) * "_Qf_" * string(parameters["Qf"][1,1]) * "_stage_" * string(i)
                 save_results(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, num_iter, parameters)
+                save_results_pyplot(X, U, Y, ν, cost_history, constraint_violation, optimality_criterion, filename, num_iter, parameters)
             end
         end
         i += 1
@@ -179,7 +183,6 @@ function dynamics_update(X, U, Y, ν, parameters, problem, solver)
     initial_controls!(problem, U)
     # Solving the problem
     solve!(problem, solver)
-    println("***** solver.stats[:iterations]", solver.stats[:iterations])
     X = to_array(problem.X)
     U = to_array(problem.U)
     return X, U
