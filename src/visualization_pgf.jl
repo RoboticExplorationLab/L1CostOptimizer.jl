@@ -60,9 +60,9 @@ function save_results(X_, U_, Y_, ν, cost_history, constraint_violation, optima
         xlabel="Time " * L"$[h]$",
         ylabel="Positions " * L"[km]",
         title="Positions",
-        legendPos="south east",
-        width="6cm",
-        height="4cm")
+        legendPos="south east"
+        )
+    PGFPlots.save("result/pgf_plot/" * filename * "_positions" * ".tikz", include_preamble=false, axis)
     push!(group_plot, axis)
 
     if parameters["linearity"]
@@ -78,9 +78,9 @@ function save_results(X_, U_, Y_, ν, cost_history, constraint_violation, optima
         xlabel="Time " * L"$[h]$",
         ylabel="Velocities " * L"[km/h]",
         title="Velocities",
-        legendPos="south east",
-        width="6cm",
-        height="4cm")
+        legendPos="north east",
+        )
+    PGFPlots.save("result/pgf_plot/" * filename * "_velocities" * ".tikz", include_preamble=false, axis)
     push!(group_plot, axis)
 
     p1 = Plots.Linear(T[1:end-1]./3600, U[1,:]*1000, style="const plot, no marks, cyan, very thick", legendentry=L"u_1")
@@ -91,8 +91,8 @@ function save_results(X_, U_, Y_, ν, cost_history, constraint_violation, optima
         ylabel="Controls " * L"[mN]",
         title="Controls",
         legendPos="south east",
-        width="6cm",
-        height="4cm")
+        )
+    PGFPlots.save("result/pgf_plot/" * filename * "_controls" * ".tikz", include_preamble=false, axis)
     push!(group_plot, axis)
 
     #Preprocessing
@@ -108,7 +108,7 @@ function save_results(X_, U_, Y_, ν, cost_history, constraint_violation, optima
     y_max_opt = y_maximum_opt + (y_maximum_opt - y_minimum_opt) / 10
 
     p1 = Plots.Linear([i for i=1:iter], cost_history[1:iter,1], style="no marks, cyan, very thick", legendentry="Cost")
-    # p2 = Plots.Linear([i for i=1:iter], log_optimality_criterion[1:iter], style="no marks, orange, very thick", legendentry=L"$||U - Y||_{2}$")
+    p2 = Plots.Linear([i for i=1:iter], log_optimality_criterion[1:iter], style="no marks, orange, very thick", legendentry="Opt. Crit.")
     axis = Axis([p1, p2],
         xlabel="L1 Solver Iterations",
         ylabel="Cost",
@@ -117,51 +117,11 @@ function save_results(X_, U_, Y_, ν, cost_history, constraint_violation, optima
         # ylabel="Optimality Criterion",
         title="Convergence",
         legendPos="north east",
-        width="6cm",
-        height="4cm")
+        )
+    PGFPlots.save("result/pgf_plot/" * filename * "_convergence" * ".tikz", include_preamble=false, axis)
     push!(group_plot, axis)
 
-
-        # subplot(plot_Y, plot_X, 4)
-        # plot([i for i=1:iter], cost_history[1:iter,1], color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$cost$")
-        # title("Cost")
-        # xlabel("L1 Solver Iterations")
-        # yscale("linear")
-        # xlim(1,iter)
-        #
-        # subplot(plot_Y, plot_X, 5)
-        # plot([i for i=1:iter], optimality_criterion[1:iter], color="forestgreen", linewidth=1.0, linestyle="-", label=L"$||\nabla_{X,U} L||_{\infty}$")
-        # title("Optimality Criterion")
-        # xlabel("L1 Solver Iterations")
-        # ylabel(L"$||U - Y||_{2} / dim(U)$")
-        # xlim(1,iter)
-        # yscale("log")
-        #
     PGFPlots.save("result/pgf_plot/" * filename*".tikz", include_preamble=false, group_plot)
     PGFPlots.save("result/pgf_plot/" * filename*".tex", group_plot)
-
-
-    # if parameters["complete_results"]
-    #     subplot(plot_Y, plot_X, 6)
-    #     step(T[1:end-1], parameters["ρ"]*(U[1,:] - Y[1,:]), color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$y_1$")
-    #     step(T[1:end-1], parameters["ρ"]*(U[2,:] - Y[2,:]), color="darkorange", linewidth=1.0, linestyle="-", label=L"$y_2$")
-    #     step(T[1:end-1], parameters["ρ"]*(U[3,:] - Y[3,:]), color="forestgreen", linewidth=1.0, linestyle="-", label=L"$y_3$")
-    #     title(L"$\rho (U - Y)$")
-    #     xlabel(L"Iterations")
-    #     legend()
-    #
-    #     subplot(plot_Y, plot_X, 7)
-    #     step(T[1:end-1], ν[1,:], color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$ν_1$")
-    #     step(T[1:end-1], ν[2,:], color="darkorange", linewidth=1.0, linestyle="-", label=L"$ν_2$")
-    #     step(T[1:end-1], ν[3,:], color="forestgreen", linewidth=1.0, linestyle="-", label=L"$ν_3$")
-    #     title(L"\nu")
-    #     xlabel(L"Time in $s$")
-    #     legend()
-    # end
-    #
-    # tight_layout()
-    # savefig("result/" * filename*"."*parameters["plot_format"], format=parameters["plot_format"], dpi=1000)
-    # close()
-    # save("result/control/" * filename*".jld", "U", U, "x0", X[:,1])
     return
 end

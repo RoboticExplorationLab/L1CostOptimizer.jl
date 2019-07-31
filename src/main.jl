@@ -16,33 +16,34 @@ include("test.jl")
 include("utils.jl")
 include("visualization.jl")
 include("visualization_pgf.jl")
-
-
-
-
-P = [10.0^i for i=1:1]
-stopping_criterion = 5e-6
-for ρ in P
-    non_lin_cons_example(ρ, stopping_criterion)
-end
-
-P = [10.0^i for i=-1:-1]
-stopping_criterion = 6e-5#5e-7
-for ρ in P
-    non_lin_uncons_example(ρ, stopping_criterion)
-end
-
+#
+#
 P = [10.0^i for i=-2:-2]
 stopping_criterion = 4.5e-3#1e-9#5e-5
 for ρ in P
     lin_uncons_example(ρ, stopping_criterion)
-end
+end #84
 
 P = [10.0^i for i=-1:-1]
 stopping_criterion = 4e-4#1e-9#1e-4
 for ρ in P
     lin_cons_example(ρ, stopping_criterion)
-end
+end #404
+
+P = [10.0^i for i=-1:-1]
+stopping_criterion = 6e-5#5e-7
+for ρ in P
+    non_lin_uncons_example(ρ, stopping_criterion)
+end #118
+
+P = [10.0^i for i=1:1]
+stopping_criterion = 5e-6
+for ρ in P
+    non_lin_cons_example(ρ, stopping_criterion)
+end #206
+
+
+
 
 
 # test_linear_dynamics_scaling()

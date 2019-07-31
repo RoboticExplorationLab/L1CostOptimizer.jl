@@ -85,9 +85,9 @@ function l1_solver(parameters)
         if i == 1
             scale_ν = parameters["α"] ./ [norm(ν[i, :], Inf) for i=1:m]
             ν = ν .* scale_ν
-        elseif i <= 30
-            scale_ν = parameters["α"] / norm(ν, Inf)
-            ν = ν .* scale_ν
+        # elseif i <= 30
+        #     scale_ν = parameters["α"] / norm(ν, Inf)
+        #     ν = ν .* scale_ν
         end
         num_lqr += solver.stats[:iterations]
         optimality_criterion[i] = compute_optimality_criterion(U, Y)

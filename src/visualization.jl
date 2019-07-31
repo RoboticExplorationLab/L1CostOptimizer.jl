@@ -130,6 +130,7 @@ function save_results_pyplot(X_, U_, Y_, ν, cost_history, constraint_violation,
     end
     PyPlot.tight_layout()
     PyPlot.savefig("result/" * filename*"."*parameters["plot_format"], format=parameters["plot_format"], dpi=1000)
+    PyPlot.savefig("result/" * filename*".png", format="png", dpi=300)
     PyPlot.close()
     JLD.save("result/control/" * filename*".jld", "U", U, "x0", X[:,1])
     return

@@ -48,7 +48,7 @@ function define_lin_constrained_parameters()
                   "u_ref" => 1.0, # reference control for ego
                   "using_constraints" => true, # using constraints on control
                   "using_final_constraints" => true, # using constraints on control
-                  "complete_results" => true, # using constraints on control
+                  "complete_results" => false, # using constraints on control
                   "stage_plot" => false, # using constraints on control
                   "stage_plot_freq" => 10, # using constraints on control
                   "plot_format" => "eps", # using constraints on control
@@ -123,7 +123,7 @@ function define_lin_unconstrained_parameters()
                   "u_ref" => 1.0, # reference control for ego
                   "using_constraints" => false, # using constraints on control
                   "using_final_constraints" => false, # using constraints on control /!\ cannot be enforced using ILQR
-                  "complete_results" => true, # using constraints on control
+                  "complete_results" => false, # using constraints on control
                   "stage_plot" => false, # using constraints on control
                   "stage_plot_freq" => 10, # using constraints on control
                   "plot_format" => "eps", # using constraints on control
@@ -137,7 +137,7 @@ function define_lin_unconstrained_parameters()
                   "q" => zeros(n), # Linear term on states (n,)
                   "r" => zeros(m), # Linear term on controls (m,)
                   "c" => 0.0, # constant term
-                  "Qf" => 10000.0 * Matrix{Float64}(I, n, n), # Quadratic final cost for terminal state (n,n)
+                  "Qf" => 1000.0 * Matrix{Float64}(I, n, n), # Quadratic final cost for terminal state (n,n)
                   "qf" => zeros(n), # Linear term on terminal state (n,)
                   "cf" => 0.0, # constant term (terminal)
                   "μ" => μ, # Standard gravitational parameter m^3 s^-2
@@ -205,7 +205,7 @@ function define_non_lin_unconstrained_parameters()
                   "u_ref" => 1.0, # reference control for ego
                   "using_constraints" => false, # using constraints on control
                   "using_final_constraints" => false, # using constraints on control
-                  "complete_results" => true, # using constraints on control
+                  "complete_results" => false, # using constraints on control
                   "stage_plot" => false, # using constraints on control
                   "stage_plot_freq" => 10, # using constraints on control
                   "plot_format" => "eps", # using constraints on control
@@ -300,7 +300,7 @@ function define_non_lin_constrained_parameters()
                   "u_ref" => 1.0, # reference control for ego
                   "using_constraints" => true, # using constraints on control
                   "using_final_constraints" => false, # using constraints on control
-                  "complete_results" => true, # using constraints on control
+                  "complete_results" => false, # using constraints on control
                   "stage_plot" => false, # using constraints on control
                   "stage_plot_freq" => 10, # using constraints on control
                   "plot_format" => "eps", # using constraints on control
