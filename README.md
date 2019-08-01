@@ -1,2 +1,2 @@
-# l1_optimization.jl
+# L1CostOptimizer.jl
 FAST SOLUTION OF OPTIMAL CONTROL PROBLEMS WITH L1 COST
