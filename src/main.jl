@@ -22,7 +22,7 @@ P = [10.0^i for i=-2:-2]
 stopping_criterion = 4.5e-3#1e-9#5e-5
 for ρ in P
     lin_uncons_example(ρ, stopping_criterion)
-end #84
+end #86
 
 P = [10.0^i for i=-1:-1]
 stopping_criterion = 4e-4#1e-9#1e-4
@@ -34,7 +34,7 @@ P = [10.0^i for i=-1:-1]
 stopping_criterion = 6e-5#5e-7
 for ρ in P
     non_lin_uncons_example(ρ, stopping_criterion)
-end #118
+end #120
 
 P = [10.0^i for i=1:1]
 stopping_criterion = 5e-6
