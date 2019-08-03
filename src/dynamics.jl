@@ -1,4 +1,9 @@
 function cw_dynamics(ẋ, x, u, parameters)
+    # Linear dynamics model of the ego and target satellite.
+    # Implements the Clohessy-Wiltshire equations
+    # with control added as force along the (x,y,z) axis defined in
+    # R. Wiltshire and W. Clohessy,
+    # “Terminal guidance system for satellite rendezvous”.
     m_ego = parameters["m_ego"]
     n_ = sqrt(parameters["μ"]/parameters["orbit_radius"]^3)
     ẋ[1:3] = x[4:6]
@@ -8,6 +13,7 @@ function cw_dynamics(ẋ, x, u, parameters)
 end
 
 function scaled_cw_dynamics(ẋ, x, u, parameters)
+    # Scaled version of the C-W equations.
     t_ref = parameters["t_ref"]
     l_ref = parameters["l_ref"]
     n_ = sqrt(parameters["μ"]/parameters["orbit_radius"]^3) * t_ref
@@ -18,9 +24,11 @@ function scaled_cw_dynamics(ẋ, x, u, parameters)
 end
 
 function scaled_non_linear_dynamics(ẋ, x, u, parameters)
+    # Scaled version of the nonlinear dynamics model.
+
     # Definition of the state
     # x = [r_target-r_ego, r_target, rd_target-rd_ego, rd_target] ∈ R^12
-    # r_ego = position vector of the ego satellite in the inertial frame.
+    # r_ego = position vector of the ego satellite in the inertial frame (ECI frame).
     # r_ego = \vec{O_0 O_ego}
     # rd_ego = velocity vector of the ego satellite in the inertial frame.
     # rd_ego = V(O_ego, S_ego/0)
@@ -31,7 +39,10 @@ function scaled_non_linear_dynamics(ẋ, x, u, parameters)
 
     # Definition of the control
     # u = [Fcx, Fcy, Fcz] \in R^3
-    # Fc is the force applied by the control system of the ego satellite expressed in the inertial frame.
+    # Fc is the force applied by the control system of the ego satellite
+    # expressed in the frame attached to the ego satellite and oriented
+    # as defined in  R. Wiltshire and W. Clohessy,
+    # “Terminal guidance system for satellite rendezvous”.
 
     # Defintion of the state derivative
     # ẋ = [rd_target-rd_ego, rd_target, rdd_target-rdd_ego, rdd_target] ∈ R^12
@@ -44,27 +55,27 @@ function scaled_non_linear_dynamics(ẋ, x, u, parameters)
     l_target_ref = parameters["l_target_ref"]
     v_ego_ref = parameters["v_ego_ref"]
     v_target_ref = parameters["v_target_ref"]
-    a_ego_ref = l_ego_ref / t_ref^2 ####parameters["a_ego_ref"]
+    a_ego_ref = l_ego_ref / t_ref^2
     a_target_ref = parameters["a_target_ref"]
     u_ref = parameters["u_ref"]
 
-    ẋ[1:6] = x[7:12] # scaled ###
-    # ẋ[4:6] = x[10:12]*parameters["v_target_ref"] / parameters["l_target_ref"]
-    # ẋ[1:3] = x[7:9]*parameters["l_ego_ref"] / parameters["l_ego_ref"]
+    ẋ[1:6] = x[7:12] # scaled
     r_ego = x[4:6] * l_target_ref - x[1:3] * l_ego_ref # unscaled
     rd_ego = x[10:12] * v_target_ref - x[7:9] * v_ego_ref # unscaled
     r_target = x[4:6] * l_target_ref
     rd_target = x[10:12] * v_target_ref
     # The control that we give is expressed in the CW frame (without the translation).
-    # We need to convert it to the world frame before applying it to the dynamics.
-    # here x_cw is the vector X of the CW frame expressed in the world frame.
+    # We need to convert it to the inertial frame before applying it to the dynamics.
+    # Here x_cw is the vector X of the CW frame expressed in the inertial frame.
     y_cw = r_target / norm(r_target)
     z_cw = cross(y_cw, rd_target)
     z_cw = z_cw / norm(z_cw)
     x_cw = cross(y_cw, z_cw)
     u_world = [x_cw y_cw z_cw]*u
-    F_ego = u_world * u_ref + gravitation_force(r_ego, "ego", parameters) + drag_force(r_ego, rd_ego, "ego", parameters) # unscaled
-    F_target = gravitation_force(r_target, "target", parameters) + drag_force(r_target, rd_target, "target", parameters) # unscaled
+    F_ego = u_world * u_ref + gravitation_force(r_ego, "ego", parameters) # unscaled
+    F_ego += drag_force(r_ego, rd_ego, "ego", parameters) # unscaled
+    F_target = gravitation_force(r_target, "target", parameters) # unscaled
+    F_target += drag_force(r_target, rd_target, "target", parameters) # unscaled
     ẋ[10:12] = F_target / parameters["m_target"] / a_target_ref # scaled
     ẋ[7:9] = (F_target / parameters["m_target"] - F_ego / parameters["m_ego"]) / a_ego_ref # scaled
 end
@@ -72,7 +83,7 @@ end
 function non_linear_dynamics(ẋ, x, u, parameters)
     # Definition of the state
     # x = [r_target-r_ego, r_target, rd_target-rd_ego, rd_target] ∈ R^12
-    # r_ego = position vector of the ego satellite in the inertial frame.
+    # r_ego = position vector of the ego satellite in the inertial frame (ECI frame).
     # r_ego = \vec{O_0 O_ego}
     # rd_ego = velocity vector of the ego satellite in the inertial frame.
     # rd_ego = V(O_ego, S_ego/0)
@@ -83,7 +94,10 @@ function non_linear_dynamics(ẋ, x, u, parameters)
 
     # Definition of the control
     # u = [Fcx, Fcy, Fcz] \in R^3
-    # Fc is the force applied by the control system of the ego satellite expressed in the inertial frame.
+    # Fc is the force applied by the control system of the ego satellite
+    # expressed in the frame attached to the ego satellite and oriented
+    # as defined in  R. Wiltshire and W. Clohessy,
+    # “Terminal guidance system for satellite rendezvous”.
 
     # Defintion of the state derivative
     # ẋ = [rd_target-rd_ego, rd_target, rdd_target-rdd_ego, rdd_target] ∈ R^12
@@ -91,43 +105,43 @@ function non_linear_dynamics(ẋ, x, u, parameters)
     # rdd_ego = Γ(O_ego, S_ego/0) = F(->ego) / m_ego
     # rdd_target = acceleration vector of the target satellite in the inertial frame.
     # rdd_target = Γ(O_target, S_target/0) = F(->target) / m_target
-
     ẋ[1:6] = x[7:12]
     r_ego = x[4:6] - x[1:3]
     rd_ego = x[10:12] - x[7:9]
     r_target = x[4:6]
     rd_target = x[10:12]
     # The control that we give is expressed in the CW frame (without the translation).
-    # We need to convert it to the world frame before applying it to the dynamics.
-    # here x_cw is the vector X of the CW frame expressed in the world frame.
+    # We need to convert it to the inertial frame before applying it to the dynamics.
+    # Here x_cw is the vector X of the CW frame expressed in the inertial frame.
     y_cw = r_target / norm(r_target)
     z_cw = cross(y_cw, rd_target)
     z_cw = z_cw / norm(z_cw)
     x_cw = cross(y_cw, z_cw)
     u_world = [x_cw y_cw z_cw]*u
-    F_ego = u_world + gravitation_force(r_ego, "ego", parameters) + drag_force(r_ego, rd_ego, "ego", parameters)
-    F_target = gravitation_force(r_target, "target", parameters) + drag_force(r_target, rd_target, "target", parameters)
+    F_ego = u_world + gravitation_force(r_ego, "ego", parameters)
+    F_ego += drag_force(r_ego, rd_ego, "ego", parameters)
+    F_target = gravitation_force(r_target, "target", parameters)
+    F_target += drag_force(r_target, rd_target, "target", parameters)
     ẋ[10:12] = F_target / parameters["m_target"]
     ẋ[7:9] = ẋ[10:12] - F_ego / parameters["m_ego"]
 end
 
 function gravitation_force(r, id, parameters)
+    # Return the gravitation force undergone by `id` at position `r`.
     μ = parameters["μ"]
-    J2 = parameters["J2"]
     if id == "ego"
         mass = parameters["m_ego"]
     elseif id == "target"
         mass = parameters["m_target"]
     end
     rmag = norm(r)
-    F_0 = - μ * mass / rmag^3 * r
-    J2_term = [r[1]*(6*r[3]^2 - 3/2(r[1]^2 + r[2]^2)), r[2]*(6*r[3]^2 - 3/2(r[1]^2 + r[2]^2)), r[3]*(3*r[3]^2 - 9/2(r[1]^2 + r[2]^2))]
-    F_J2 = J2 / rmag^7 * J2_term
-    F = F_0### + F_J2
+    F = - μ * mass / rmag^3 * r
     return F
 end
 
 function drag_force(r, v, id, parameters)
+    # Return the drag force undergone by `id` at position `r` and velocity `v`.
+    # `r` and `v` are expressed in the ECI frame.
     if id == "ego"
         A = parameters["A_ego"]
         Cd = parameters["Cd_ego"]
@@ -135,7 +149,6 @@ function drag_force(r, v, id, parameters)
         A = parameters["A_target"]
         Cd = parameters["Cd_target"]
     end
-    ### a needs to be the earth radius
     alt = norm(r) - parameters["a"]
     density = atmospheric_density(alt)
     v_rel = v + cross(parameters["ω"], r)
@@ -156,8 +169,5 @@ function atmospheric_density(alt)
     density = 9.201e-05*exp(-5.301e-05*alt) # min
     # rho = 5.987e-05*exp(-4.836e-05*h); # avg
     # rho = 4.393e-05*exp(-4.467e-05*h); # max
-    # if alt == 5e5
-    #     density = 7.3e-13
-    # end
     return density
 end

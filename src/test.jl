@@ -1,29 +1,3 @@
-# using BenchmarkTools
-# using JLD
-# using LinearAlgebra
-# using TrajectoryOptimization
-# using PartedArrays
-# using PyPlot
-#
-# include("cost.jl")
-# include("dynamics.jl")
-# include("experiment.jl")
-# include("experiment_parameters.jl")
-# include("parameter_scaling.jl")
-# include("solver.jl")
-# include("test.jl")
-# include("utils.jl")
-# include("visualization.jl")
-#
-#
-#
-# include("cost.jl")
-# include("dynamics.jl")
-# include("experiment.jl")
-# include("parameter_scaling.jl")
-# include("solver.jl")
-# include("utils.jl")
-
 function test_linear_dynamics_scaling()
     lin_uncons_parameters = define_lin_unconstrained_parameters()
     lin_uncons_parameters = scale_lin_parameters(lin_uncons_parameters)
@@ -101,7 +75,7 @@ function test_dynamics_consistency()
     lin_uncons_parameters = define_lin_unconstrained_parameters()
     non_lin_uncons_parameters = define_non_lin_unconstrained_parameters()
     x0_full = initial_drift(lin_uncons_parameters)
-    x0_cw =  full_to_cw(x0_full)
+    x0_cw =  full_to_reduced_state(x0_full)
     non_lin_uncons_parameters["x0"] = x0_full
     lin_uncons_parameters["x0"] = x0_cw
     N = lin_uncons_parameters["N"]
@@ -123,10 +97,6 @@ function test_dynamics_consistency()
     m = non_lin_uncons_parameters["m"]
     X_full_cons = rollout_dynamics(n, m, N, tf, x0_full, U_full_cons, non_linear_dynamics!)
     X_full_uncons = rollout_dynamics(n, m, N, tf, x0_full, U_full_uncons, non_linear_dynamics!)
-    # println("x0_full", x0_full)
-    # println("U_full_uncons", U_full_uncons)
-    # println("X_full_uncons", X_full_uncons)
-
     n = lin_uncons_parameters["n"]
     m = lin_uncons_parameters["m"]
     X_cw_cons = rollout_dynamics(n, m, N, tf, x0_cw, U_cw_cons, cw_dynamics!)
@@ -135,8 +105,8 @@ function test_dynamics_consistency()
     X_converted_cons = zeros(lin_uncons_parameters["n"], N)
     X_converted_uncons = zeros(lin_uncons_parameters["n"], N)
     for k=1:N
-        X_converted_cons[:,k] = full_to_cw(X_full_cons[:,k])
-        X_converted_uncons[:,k] = full_to_cw(X_full_uncons[:,k])
+        X_converted_cons[:,k] = full_to_reduced_state(X_full_cons[:,k])
+        X_converted_uncons[:,k] = full_to_reduced_state(X_full_uncons[:,k])
     end
     compare_plot(N, tf,
         X_cw_cons,
@@ -203,9 +173,6 @@ function compare_plot(N, tf, X_cw_cons, X_cw_uncons,
     PyPlot.plot(T, X_converted_cons[1,:], color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$x_1$ ego")
     PyPlot.plot(T, X_converted_cons[2,:], color="darkorange", linewidth=1.0, linestyle="-", label=L"$x_2$ ego")
     PyPlot.plot(T, X_converted_cons[3,:], color="forestgreen", linewidth=1.0, linestyle="-", label=L"$x_3$ ego")
-    # plot(T, X_full_cons[1,:], color="cornflowerblue", linewidth=2.0, linestyle="--", label=L"$x_1$ ego")
-    # plot(T, X_full_cons[2,:], color="darkorange", linewidth=2.0, linestyle="--", label=L"$x_2$ ego")
-    # plot(T, X_full_cons[3,:], color="forestgreen", linewidth=2.0, linestyle="--", label=L"$x_3$ ego")
     PyPlot.title("Positions conv cons")
     PyPlot.ticklabel_format(axis="both", style="sci", scilimits=(0,0))
     PyPlot.xlabel(L"Time in $s$")
@@ -216,9 +183,6 @@ function compare_plot(N, tf, X_cw_cons, X_cw_uncons,
     PyPlot.plot(T, X_converted_cons[4,:], color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$\dot{x}_1$ ego")
     PyPlot.plot(T, X_converted_cons[5,:], color="darkorange", linewidth=1.0, linestyle="-", label=L"$\dot{x}_2$ ego")
     PyPlot.plot(T, X_converted_cons[6,:], color="forestgreen", linewidth=1.0, linestyle="-", label=L"$\dot{x}_3$ ego")
-    # plot(T, X_full_cons[7,:], color="cornflowerblue", linewidth=2.0, linestyle="--", label=L"$\dot{x}_1$ ego")
-    # plot(T, X_full_cons[8,:], color="darkorange", linewidth=2.0, linestyle="--", label=L"$\dot{x}_2$ ego")
-    # plot(T, X_full_cons[9,:], color="forestgreen", linewidth=2.0, linestyle="--", label=L"$\dot{x}_3$ ego")
     PyPlot.title("Velocities conv cons")
     PyPlot.ticklabel_format(axis="both", style="sci", scilimits=(0,0))
     PyPlot.xlabel(L"Time in $s$")
@@ -229,9 +193,6 @@ function compare_plot(N, tf, X_cw_cons, X_cw_uncons,
     PyPlot.plot(T, X_converted_uncons[1,:], color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$x_1$ ego")
     PyPlot.plot(T, X_converted_uncons[2,:], color="darkorange", linewidth=1.0, linestyle="-", label=L"$x_2$ ego")
     PyPlot.plot(T, X_converted_uncons[3,:], color="forestgreen", linewidth=1.0, linestyle="-", label=L"$x_3$ ego")
-    # plot(T, X_full_uncons[1,:], color="cornflowerblue", linewidth=2.0, linestyle="--", label=L"$x_1$ ego")
-    # plot(T, X_full_uncons[2,:], color="darkorange", linewidth=2.0, linestyle="--", label=L"$x_2$ ego")
-    # plot(T, X_full_uncons[3,:], color="forestgreen", linewidth=2.0, linestyle="--", label=L"$x_3$ ego")
     PyPlot.title("Positions conv uncons")
     PyPlot.ticklabel_format(axis="both", style="sci", scilimits=(0,0))
     PyPlot.xlabel(L"Time in $s$")
@@ -242,69 +203,11 @@ function compare_plot(N, tf, X_cw_cons, X_cw_uncons,
     PyPlot.plot(T, X_converted_uncons[4,:], color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$\dot{x}_1$ ego")
     PyPlot.plot(T, X_converted_uncons[5,:], color="darkorange", linewidth=1.0, linestyle="-", label=L"$\dot{x}_2$ ego")
     PyPlot.plot(T, X_converted_uncons[6,:], color="forestgreen", linewidth=1.0, linestyle="-", label=L"$\dot{x}_3$ ego")
-    # plot(T, X_full_uncons[7,:], color="cornflowerblue", linewidth=2.0, linestyle="--", label=L"$\dot{x}_1$ ego")
-    # plot(T, X_full_uncons[8,:], color="darkorange", linewidth=2.0, linestyle="--", label=L"$\dot{x}_2$ ego")
-    # plot(T, X_full_uncons[9,:], color="forestgreen", linewidth=2.0, linestyle="--", label=L"$\dot{x}_3$ ego")
     PyPlot.title("Velocities conv uncons")
     PyPlot.ticklabel_format(axis="both", style="sci", scilimits=(0,0))
     PyPlot.xlabel(L"Time in $s$")
     PyPlot.ylabel(L"Velocity in $m/s$")
     # legend()
-
-    # subplot(plot_Y, plot_X, 5)
-    # plot(T, X_converted_cons_scaled[1,:], color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$x_1$ ego")
-    # plot(T, X_converted_cons_scaled[2,:], color="darkorange", linewidth=1.0, linestyle="-", label=L"$x_2$ ego")
-    # plot(T, X_converted_cons_scaled[3,:], color="forestgreen", linewidth=1.0, linestyle="-", label=L"$x_3$ ego")
-    # plot(T, X_full_cons_scaled[1,:], color="cornflowerblue", linewidth=2.0, linestyle="--", label=L"$x_1$ ego")
-    # plot(T, X_full_cons_scaled[2,:], color="darkorange", linewidth=2.0, linestyle="--", label=L"$x_2$ ego")
-    # plot(T, X_full_cons_scaled[3,:], color="forestgreen", linewidth=2.0, linestyle="--", label=L"$x_3$ ego")
-    # title("Positions conv cons scaled")
-    # ticklabel_format(axis="both", style="sci", scilimits=(0,0))
-    # xlabel(L"Time in $s$")
-    # ylabel(L"Position in $m$")
-    # # legend()
-    #
-    # subplot(plot_Y, plot_X, 11)
-    # plot(T, X_converted_cons_scaled[4,:], color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$\dot{x}_1$ ego")
-    # plot(T, X_converted_cons_scaled[5,:], color="darkorange", linewidth=1.0, linestyle="-", label=L"$\dot{x}_2$ ego")
-    # plot(T, X_converted_cons_scaled[6,:], color="forestgreen", linewidth=1.0, linestyle="-", label=L"$\dot{x}_3$ ego")
-    # plot(T, X_full_cons_scaled[7,:], color="cornflowerblue", linewidth=2.0, linestyle="--", label=L"$\dot{x}_1$ ego")
-    # plot(T, X_full_cons_scaled[8,:], color="darkorange", linewidth=2.0, linestyle="--", label=L"$\dot{x}_2$ ego")
-    # plot(T, X_full_cons_scaled[9,:], color="forestgreen", linewidth=2.0, linestyle="--", label=L"$\dot{x}_3$ ego")
-    # title("Velocities conv cons scaled")
-    # ticklabel_format(axis="both", style="sci", scilimits=(0,0))
-    # xlabel(L"Time in $s$")
-    # ylabel(L"Velocity in $m/s$")
-    # # legend()
-    #
-    # subplot(plot_Y, plot_X, 6)
-    # plot(T, X_converted_uncons_scaled[1,:], color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$x_1$ ego")
-    # plot(T, X_converted_uncons_scaled[2,:], color="darkorange", linewidth=1.0, linestyle="-", label=L"$x_2$ ego")
-    # plot(T, X_converted_uncons_scaled[3,:], color="forestgreen", linewidth=1.0, linestyle="-", label=L"$x_3$ ego")
-    # plot(T, X_full_uncons_scaled[1,:], color="cornflowerblue", linewidth=2.0, linestyle="--", label=L"$x_1$ ego")
-    # plot(T, X_full_uncons_scaled[2,:], color="darkorange", linewidth=2.0, linestyle="--", label=L"$x_2$ ego")
-    # plot(T, X_full_uncons_scaled[3,:], color="forestgreen", linewidth=2.0, linestyle="--", label=L"$x_3$ ego")
-    # title("Positions conv uncons scaled")
-    # ticklabel_format(axis="both", style="sci", scilimits=(0,0))
-    # xlabel(L"Time in $s$")
-    # ylabel(L"Position in $m$")
-    # # legend()
-    #
-    # subplot(plot_Y, plot_X, 12)
-    # plot(T, X_converted_uncons_scaled[4,:], color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$\dot{x}_1$ ego")
-    # plot(T, X_converted_uncons_scaled[5,:], color="darkorange", linewidth=1.0, linestyle="-", label=L"$\dot{x}_2$ ego")
-    # plot(T, X_converted_uncons_scaled[6,:], color="forestgreen", linewidth=1.0, linestyle="-", label=L"$\dot{x}_3$ ego")
-    # plot(T, X_full_uncons_scaled[7,:], color="cornflowerblue", linewidth=2.0, linestyle="--", label=L"$\dot{x}_1$ ego")
-    # plot(T, X_full_uncons_scaled[8,:], color="darkorange", linewidth=2.0, linestyle="--", label=L"$\dot{x}_2$ ego")
-    # plot(T, X_full_uncons_scaled[9,:], color="forestgreen", linewidth=2.0, linestyle="--", label=L"$\dot{x}_3$ ego")
-    # title("Velocities conv uncons scaled")
-    # ticklabel_format(axis="both", style="sci", scilimits=(0,0))
-    # xlabel(L"Time in $s$")
-    # ylabel(L"Velocity in $m/s$")
-    # # legend()
-
-
-
 
     PyPlot.subplot(plot_Y, plot_X, 9)
     PyPlot.step(T[1:end-1], U_cw_cons[1,:], color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$u_1$")
@@ -358,7 +261,3 @@ function compare_plot(N, tf, X_cw_cons, X_cw_uncons,
     PyPlot.savefig("result/" * "test.eps", format="eps", dpi=300)
     PyPlot.close()
 end
-
-# test_linear_dynamics_scaling()
-# test_non_linear_dynamics_scaling()
-# test_dynamics_consistency()

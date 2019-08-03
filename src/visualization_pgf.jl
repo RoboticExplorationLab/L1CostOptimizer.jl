@@ -1,4 +1,4 @@
-function save_results(X_, U_, Y_, ν, cost_history, constraint_violation, optimality_criterion, filename, iter, parameters)
+function save_results(X_, U_, Y_, ν, cost_history, optimality_criterion, filename, iter, parameters)
     num_iter = parameters["num_iter"]
     N = parameters["N"]
     n = parameters["n"]
@@ -34,7 +34,7 @@ function save_results(X_, U_, Y_, ν, cost_history, constraint_violation, optima
         Y = Y_ * u_ref
         X_cw = zeros(6,N)
         for k = 1:N
-            X_cw[:,k] = full_to_cw(X[:,k])
+            X_cw[:,k] = full_to_reduced_state(X[:,k])
         end
     end
 
@@ -96,8 +96,8 @@ function save_results(X_, U_, Y_, ν, cost_history, constraint_violation, optima
     push!(group_plot, axis)
 
     #Preprocessing
-    y_minimum_cost = minimum(cost_history[1:iter,1])
-    y_maximum_cost = maximum(cost_history[1:iter,1])
+    y_minimum_cost = minimum(cost_history[1:iter])
+    y_maximum_cost = maximum(cost_history[1:iter])
     y_min_cost = y_minimum_cost - (y_maximum_cost - y_minimum_cost) / 10
     y_max_cost = y_maximum_cost + (y_maximum_cost - y_minimum_cost) / 10
 
@@ -107,7 +107,7 @@ function save_results(X_, U_, Y_, ν, cost_history, constraint_violation, optima
     y_min_opt = y_minimum_opt - (y_maximum_opt - y_minimum_opt) / 10
     y_max_opt = y_maximum_opt + (y_maximum_opt - y_minimum_opt) / 10
 
-    p1 = Plots.Linear([i for i=1:iter], cost_history[1:iter,1], style="no marks, cyan, very thick", legendentry="Cost")
+    p1 = Plots.Linear([i for i=1:iter], cost_history[1:iter], style="no marks, cyan, very thick", legendentry="Cost")
     p2 = Plots.Linear([i for i=1:iter], log_optimality_criterion[1:iter], style="no marks, orange, very thick", legendentry="Opt. Crit.")
     axis = Axis([p1, p2],
         xlabel="L1 Solver Iterations",

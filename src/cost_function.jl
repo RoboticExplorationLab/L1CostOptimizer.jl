@@ -30,7 +30,8 @@ function lqr_cost_function(X, U, Y, ν, parameters)
     ρ = parameters["ρ"]
     cost = 0
     for i=1:N-1
-        cost += 1/2 * X[:,i]'*Q*X[:,i] + ρ * U[:,i]'*U[:,i] + U[:,i]'*(ν[:,i] - ρ * Y[:,i])
+        cost += 1/2 * X[:,i]'*Q*X[:,i]
+        cost += ρ * U[:,i]'*U[:,i] + U[:,i]'*(ν[:,i] - ρ * Y[:,i])
     end
     cost += 1/2 * X[:,N]'*Qf*X[:,N]
     return cost

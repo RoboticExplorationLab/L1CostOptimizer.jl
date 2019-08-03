@@ -1,5 +1,4 @@
-using PyPlot
-function save_results_pyplot(X_, U_, Y_, ν, cost_history, constraint_violation, optimality_criterion, filename, iter, parameters)
+function save_results_pyplot(X_, U_, Y_, ν, cost_history, optimality_criterion, filename, iter, parameters)
     num_iter = parameters["num_iter"]
     N = parameters["N"]
     n = parameters["n"]
@@ -35,7 +34,7 @@ function save_results_pyplot(X_, U_, Y_, ν, cost_history, constraint_violation,
         Y = Y_ * u_ref
         X_cw = zeros(6,N)
         for k = 1:N
-            X_cw[:,k] = full_to_cw(X[:,k])
+            X_cw[:,k] = full_to_reduced_state(X[:,k])
         end
     end
 
@@ -91,8 +90,7 @@ function save_results_pyplot(X_, U_, Y_, ν, cost_history, constraint_violation,
     PyPlot.legend()
 
     PyPlot.subplot(plot_Y, plot_X, 4)
-    # PyPlot.plot(log.(10, cost_history[:,1]), color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$cost$")
-    PyPlot.plot([i for i=1:iter], cost_history[1:iter,1], color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$cost$")
+    PyPlot.plot([i for i=1:iter], cost_history[1:iter], color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$cost$")
     PyPlot.title("Cost")
     PyPlot.xlabel("L1 Solver Iterations")
     # ylabel("")
