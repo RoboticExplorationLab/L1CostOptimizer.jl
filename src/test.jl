@@ -1,4 +1,5 @@
 function test_linear_dynamics_scaling()
+    # Test the scaling of the linear dynamics.
     lin_uncons_parameters = define_lin_unconstrained_parameters()
     lin_uncons_parameters = scale_lin_parameters(lin_uncons_parameters)
 
@@ -32,6 +33,7 @@ function test_linear_dynamics_scaling()
 end
 
 function test_non_linear_dynamics_scaling()
+    # Test the scaling of the nonlinear dynamics.
     non_lin_uncons_parameters = define_non_lin_unconstrained_parameters()
 
     ẋ1 = zeros(non_lin_uncons_parameters["n"])
@@ -72,6 +74,10 @@ function test_non_linear_dynamics_scaling()
 end
 
 function test_dynamics_consistency()
+    # Test that the linear dynamics and nonlinear dynamics are consistent.
+    # Which means that the state and control trajectories obtained for the two
+    # dynamics are comparable. Indeed, the nonlinearities of the system
+    # are relatively small.
     lin_uncons_parameters = define_lin_unconstrained_parameters()
     non_lin_uncons_parameters = define_non_lin_unconstrained_parameters()
     x0_full = initial_drift(lin_uncons_parameters)
@@ -124,6 +130,8 @@ end
 function compare_plot(N, tf, X_cw_cons, X_cw_uncons,
     X_converted_cons, X_converted_uncons, X_full_cons, X_full_uncons,
     U_cw_cons, U_cw_uncons, U_full_cons, U_full_uncons)
+    # Plots the state and control trajectories obtained from the two
+    # dynamics and check that they are are comparable.
     plot_X = 4
     plot_Y = 3
     T = [(k-1)*tf/N for k=1:N]
@@ -177,7 +185,6 @@ function compare_plot(N, tf, X_cw_cons, X_cw_uncons,
     PyPlot.ticklabel_format(axis="both", style="sci", scilimits=(0,0))
     PyPlot.xlabel(L"Time in $s$")
     PyPlot.ylabel(L"Position in $m$")
-    # legend()
 
     PyPlot.subplot(plot_Y, plot_X, 7)
     PyPlot.plot(T, X_converted_cons[4,:], color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$\dot{x}_1$ ego")
@@ -187,7 +194,6 @@ function compare_plot(N, tf, X_cw_cons, X_cw_uncons,
     PyPlot.ticklabel_format(axis="both", style="sci", scilimits=(0,0))
     PyPlot.xlabel(L"Time in $s$")
     PyPlot.ylabel(L"Velocity in $m/s$")
-    # legend()
 
     PyPlot.subplot(plot_Y, plot_X, 4)
     PyPlot.plot(T, X_converted_uncons[1,:], color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$x_1$ ego")
@@ -197,7 +203,6 @@ function compare_plot(N, tf, X_cw_cons, X_cw_uncons,
     PyPlot.ticklabel_format(axis="both", style="sci", scilimits=(0,0))
     PyPlot.xlabel(L"Time in $s$")
     PyPlot.ylabel(L"Position in $m$")
-    # legend()
 
     PyPlot.subplot(plot_Y, plot_X, 8)
     PyPlot.plot(T, X_converted_uncons[4,:], color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$\dot{x}_1$ ego")
@@ -207,7 +212,6 @@ function compare_plot(N, tf, X_cw_cons, X_cw_uncons,
     PyPlot.ticklabel_format(axis="both", style="sci", scilimits=(0,0))
     PyPlot.xlabel(L"Time in $s$")
     PyPlot.ylabel(L"Velocity in $m/s$")
-    # legend()
 
     PyPlot.subplot(plot_Y, plot_X, 9)
     PyPlot.step(T[1:end-1], U_cw_cons[1,:], color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$u_1$")
@@ -218,7 +222,6 @@ function compare_plot(N, tf, X_cw_cons, X_cw_uncons,
     PyPlot.xlabel(L"Time in $s$")
     PyPlot.ylabel(L"Controls in $N$")
     PyPlot.yscale("linear")
-    # yscale("log")
     PyPlot.legend()
 
     PyPlot.subplot(plot_Y, plot_X, 10)
@@ -230,7 +233,6 @@ function compare_plot(N, tf, X_cw_cons, X_cw_uncons,
     PyPlot.xlabel(L"Time in $s$")
     PyPlot.ylabel(L"Controls in $N$")
     PyPlot.yscale("linear")
-    # yscale("log")
     PyPlot.legend()
 
     PyPlot.subplot(plot_Y, plot_X, 11)
@@ -242,7 +244,6 @@ function compare_plot(N, tf, X_cw_cons, X_cw_uncons,
     PyPlot.xlabel(L"Time in $s$")
     PyPlot.ylabel(L"Controls in $N$")
     PyPlot.yscale("linear")
-    # yscale("log")
     PyPlot.legend()
 
     PyPlot.subplot(plot_Y, plot_X, 12)
@@ -251,10 +252,8 @@ function compare_plot(N, tf, X_cw_cons, X_cw_uncons,
     PyPlot.step(T[1:end-1], U_full_uncons[3,:], color="forestgreen", linewidth=1.0, linestyle="-", label=L"$u_full_3$")
     PyPlot.title("Control full uncons")
     PyPlot.ticklabel_format(axis="both", style="sci", scilimits=(0,0))
-    # xlabel(L"Time in $s$")
     PyPlot.ylabel(L"Controls in $N$")
     PyPlot.yscale("linear")
-    # yscale("log")
     PyPlot.legend()
 
     PyPlot.tight_layout()
