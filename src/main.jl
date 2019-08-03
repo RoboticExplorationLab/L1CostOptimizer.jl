@@ -42,30 +42,9 @@ for ρ in P
     non_lin_cons_example(ρ, stopping_criterion)
 end #206
 
-
-
 test_linear_dynamics_scaling()
 test_non_linear_dynamics_scaling()
 test_dynamics_consistency()
-
-
-# function gradient_todorov(prob::Problem,solver::iLQRSolver)
-#
-# function gradient_feedforward(solver::iLQRSolver)
-#
-# gradient saved in
-# @logmsg InnerLoop :grad value=solver.stats[:gradient][end]
-#
-# can specify todorov or feedforward for the grad computation
-#     todoriv is approx of L2 norm of the grad
-#
-#
-# for ilqr use the const convergence and 1e-3 for the value
-# for aug lag solver use 1e-3 on constraint violation
-#
-#
-
-
 
 # # @profiler logs = run_experiments()
 # # logs = run_experiments(lin_parameters)
