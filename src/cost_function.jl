@@ -19,7 +19,6 @@ function cost_function(X_, U_, parameters)
     for i=1:N-1
         cost += 1/2 * X[:,i]'*Q*X[:,i] + α * norm(U[:,i], 1)
     end
-    # cost += 1/2 * X[:,N]'*Qf*X[:,N] ###
     return cost
 end
 

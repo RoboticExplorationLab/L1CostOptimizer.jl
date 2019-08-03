@@ -18,7 +18,7 @@ function define_lin_constrained_parameters()
     x0_drift = [Δr0; x_target[1:3]; Δrd0; x_target[4:6]] # initial state
 
     # Initial state obtained using drift
-    x0 = [-79514.2, -720.471, 29.3723, 0.788372, -82.5619, 0.0958906]
+    x0 = zeros(n)
     xf = zeros(n)
     m_ego = 4.6
 
@@ -94,7 +94,7 @@ function define_lin_unconstrained_parameters()
     x0_drift = [Δr0; x_target[1:3]; Δrd0; x_target[4:6]] # Initial state
 
     # Initial state obtained using drift
-    x0 = [-79514.2, -720.471, 29.3723, 0.788372, -82.5619, 0.0958906]
+    x0 = zeros(n)
     xf = zeros(n)
     m_ego = 4.6
 
@@ -263,7 +263,7 @@ function define_non_lin_constrained_parameters()
     x0_drift = [Δr0; x_target[1:3]; Δrd0; x_target[4:6]] # initial state
 
     x0 = [[0, -100, 0]; r0; zeros(3); v0]
-    xf = [0.0, 0.0, 0.0, 6.80966e6, 2.43227e6, 0.0, 0.0, 0.0, 0.0, -2498.63, 6995.42, 0.0] #6000 sec
+    xf = zeros(n)
 
     Qf = 1000 .* Array(Diagonal([ones(3); zeros(3); ones(3); zeros(3)]))
 

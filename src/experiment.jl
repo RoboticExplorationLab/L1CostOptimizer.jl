@@ -83,11 +83,22 @@ function non_lin_cons_example(ρ, stopping_criterion)
     # Runs the nonlinear dynamics with control contraints example
     non_lin_cons_parameters = define_non_lin_constrained_parameters()
     N = non_lin_cons_parameters["N"]
+    n = non_lin_cons_parameters["n"]
+    m = non_lin_cons_parameters["m"]
+    tf = non_lin_cons_parameters["tf"]
     non_lin_cons_parameters["ρ"] = ρ
     non_lin_cons_parameters["stopping_criterion"] = stopping_criterion
     # Propagates the nonlinear dynamics forward
     # to let the 2 satellites drift apart from each other.
     x0_full = initial_drift(non_lin_cons_parameters)
+    # We set the goal state
+    function non_linear_dynamics!(ẋ,x,u)
+        non_linear_dynamics(ẋ, x, u, non_lin_cons_parameters)
+    end
+    xf = drifting_simulation(n, m, N, tf, x0_full, non_linear_dynamics!)
+    xf[1:3] = zeros(3)
+    xf[7:9] = zeros(3)
+    non_lin_cons_parameters["xf"] = xf
     # We recover from the initial drift using a open loop controller
     # relying on the linear dynamics model.
     # we set the orbit radius of the cw model.
