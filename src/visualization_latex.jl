@@ -1,4 +1,4 @@
-function save_results(X_, U_, Y_, ν, cost_history, optimality_criterion,
+function save_results_latex(X_, U_, Y_, ν, cost_history, optimality_criterion,
         filename, iter, parameters)
     if parameters["linearity"]
         T, X, U, Y = process_results(X_, U_, Y_, ν, cost_history,
@@ -30,7 +30,7 @@ function save_results(X_, U_, Y_, ν, cost_history, optimality_criterion,
         title="Positions",
         legendPos="south east"
         )
-    PGFPlots.save("result/pgf_plot/" * filename * "_positions" * ".tikz", include_preamble=false, axis)
+    PGFPlots.save("visualization/latex_plot/" * filename * "_positions" * ".tikz", include_preamble=false, axis)
     push!(group_plot, axis)
 
     if parameters["linearity"]
@@ -48,7 +48,7 @@ function save_results(X_, U_, Y_, ν, cost_history, optimality_criterion,
         title="Velocities",
         legendPos="north east",
         )
-    PGFPlots.save("result/pgf_plot/" * filename * "_velocities" * ".tikz", include_preamble=false, axis)
+    PGFPlots.save("visualization/latex_plot/" * filename * "_velocities" * ".tikz", include_preamble=false, axis)
     push!(group_plot, axis)
 
     p1 = Plots.Linear(T[1:end-1]./3600, U[1,:]*1000, style="const plot, no marks, cyan, very thick", legendentry=L"u_1")
@@ -60,7 +60,7 @@ function save_results(X_, U_, Y_, ν, cost_history, optimality_criterion,
         title="Controls",
         legendPos="south east",
         )
-    PGFPlots.save("result/pgf_plot/" * filename * "_controls" * ".tikz", include_preamble=false, axis)
+    PGFPlots.save("visualization/latex_plot/" * filename * "_controls" * ".tikz", include_preamble=false, axis)
     push!(group_plot, axis)
 
     #Preprocessing
@@ -75,10 +75,10 @@ function save_results(X_, U_, Y_, ν, cost_history, optimality_criterion,
         title="Convergence",
         legendPos="north east",
         )
-    PGFPlots.save("result/pgf_plot/" * filename * "_convergence" * ".tikz", include_preamble=false, axis)
+    PGFPlots.save("visualization/latex_plot/" * filename * "_convergence" * ".tikz", include_preamble=false, axis)
     push!(group_plot, axis)
 
-    PGFPlots.save("result/pgf_plot/" * filename*".tikz", include_preamble=false, group_plot)
-    PGFPlots.save("result/pgf_plot/" * filename*".tex", group_plot)
+    PGFPlots.save("visualization/latex_plot/" * filename*".tikz", include_preamble=false, group_plot)
+    PGFPlots.save("visualization/latex_plot/" * filename*".tex", group_plot)
     return
 end

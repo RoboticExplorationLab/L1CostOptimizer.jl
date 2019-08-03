@@ -1,4 +1,4 @@
-function save_results_pyplot(X_, U_, Y_, ν, cost_history, optimality_criterion, filename, iter, parameters)
+function save_results_image(X_, U_, Y_, ν, cost_history, optimality_criterion, filename, iter, parameters)
     # Saves plots of the state, control trajectories as well as cost, optimality
     # across iterations.
     if parameters["linearity"]
@@ -92,7 +92,7 @@ function save_results_pyplot(X_, U_, Y_, ν, cost_history, optimality_criterion,
         PyPlot.legend()
     end
     PyPlot.tight_layout()
-    PyPlot.savefig("result/" * filename*"."*parameters["plot_format"], format=parameters["plot_format"], dpi=1000)
+    PyPlot.savefig("visualization/image_plot/" * filename*"."*parameters["plot_format"], format=parameters["plot_format"], dpi=1000)
     PyPlot.close()
     JLD.save("result/control/" * filename*".jld", "U", U, "x0", X[:,1])
     return

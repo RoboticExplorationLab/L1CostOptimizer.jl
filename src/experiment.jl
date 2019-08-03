@@ -19,9 +19,9 @@ function lin_cons_example(ρ, stopping_criterion)
     # Compute the control sequence
     X, U, Y, ν, cost_history, optimality_criterion, iter = l1_solver(lin_cons_parameters)
     filename = "constrained_linear_dynamics"
-    save_results(X, U, Y, ν, cost_history, optimality_criterion,
+    save_results_latex(X, U, Y, ν, cost_history, optimality_criterion,
         filename, iter, lin_cons_parameters)
-    save_results_pyplot(X, U, Y, ν, cost_history, optimality_criterion,
+    save_results_image(X, U, Y, ν, cost_history, optimality_criterion,
         filename, iter, lin_cons_parameters)
 end
 
@@ -46,9 +46,9 @@ function lin_uncons_example(ρ, stopping_criterion)
     # Compute the control sequence
     X, U, Y, ν, cost_history, optimality_criterion, iter = l1_solver(lin_uncons_parameters)
     filename = "unconstrained_linear_dynamics"
-    save_results(X, U, Y, ν, cost_history, optimality_criterion,
+    save_results_latex(X, U, Y, ν, cost_history, optimality_criterion,
         filename, iter, lin_uncons_parameters)
-    save_results_pyplot(X, U, Y, ν, cost_history, optimality_criterion,
+    save_results_image(X, U, Y, ν, cost_history, optimality_criterion,
         filename, iter, lin_uncons_parameters)
 end
 
@@ -73,9 +73,9 @@ function non_lin_uncons_example(ρ, stopping_criterion)
     # Compute the control sequence
     X, U, Y, ν, cost_history, optimality_criterion, iter = l1_solver(non_lin_uncons_parameters)
     filename = "unconstrained_nonlinear_dynamics"
-    save_results(X, U, Y, ν, cost_history, optimality_criterion,
+    save_results_latex(X, U, Y, ν, cost_history, optimality_criterion,
         filename, iter, non_lin_uncons_parameters)
-    save_results_pyplot(X, U, Y, ν, cost_history, optimality_criterion,
+    save_results_image(X, U, Y, ν, cost_history, optimality_criterion,
         filename, iter, non_lin_uncons_parameters)
 end
 
@@ -99,8 +99,8 @@ function non_lin_cons_example(ρ, stopping_criterion)
     # Compute the control sequence
     X, U, Y, ν, cost_history, optimality_criterion, iter = l1_solver(non_lin_cons_parameters)
     filename = "constrained_nonlinear_dynamics"
-    save_results(X, U, Y, ν, cost_history, optimality_criterion,
+    save_results_latex(X, U, Y, ν, cost_history, optimality_criterion,
         filename, iter, non_lin_cons_parameters)
-    save_results_pyplot(X, U, Y, ν, cost_history, optimality_criterion,
+    save_results_image(X, U, Y, ν, cost_history, optimality_criterion,
         filename, iter, non_lin_cons_parameters)
 end

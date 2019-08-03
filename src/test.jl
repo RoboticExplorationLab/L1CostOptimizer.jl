@@ -257,6 +257,6 @@ function compare_plot(N, tf, X_cw_cons, X_cw_uncons,
     PyPlot.legend()
 
     PyPlot.tight_layout()
-    PyPlot.savefig("result/" * "test.eps", format="eps", dpi=300)
+    PyPlot.savefig("visualization/test/" * "dynamics_consistency.eps", format="eps", dpi=300)
     PyPlot.close()
 end
