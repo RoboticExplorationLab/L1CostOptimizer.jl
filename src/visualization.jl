@@ -1,50 +1,21 @@
 function save_results_pyplot(X_, U_, Y_, ν, cost_history, optimality_criterion, filename, iter, parameters)
-    num_iter = parameters["num_iter"]
-    N = parameters["N"]
-    n = parameters["n"]
-    Δt_rescaled = parameters["Δt"] * parameters["t_ref"]
-
-    t_ref = parameters["t_ref"]
-    T = [Δt_rescaled * i for i=0:N-1]
-
-    # Rescaling
+    # Saves plots of the state, control trajectories as well as cost, optimality
+    # across iterations.
     if parameters["linearity"]
-        l_ref = parameters["l_ref"]
-        v_ref = parameters["v_ref"]
-        u_ref = parameters["u_ref"]
-        X = zero(X_)
-        X[1:3,:] = X_[1:3,:] * l_ref
-        X[4:6,:] = X_[4:6,:] * v_ref
-        U = U_ * u_ref
-        Y = Y_ * u_ref
+        T, X, U, Y = process_results(X_, U_, Y_, ν, cost_history, optimality_criterion, filename, iter, parameters)
     elseif !parameters["linearity"]
-        l_ego_ref = parameters["l_ego_ref"]
-        l_target_ref = parameters["l_target_ref"]
-        v_ego_ref = parameters["v_ego_ref"]
-        v_target_ref = parameters["v_target_ref"]
-        a_ego_ref = parameters["a_ego_ref"]
-        a_target_ref = parameters["a_target_ref"]
-        u_ref = parameters["u_ref"]
-        X = zero(X_)
-        X[1:3,:] = X_[1:3,:] * l_ego_ref
-        X[4:6,:] = X_[4:6,:] * l_target_ref
-        X[7:9,:] = X_[7:9,:] * v_ego_ref
-        X[10:12,:] = X_[10:12,:] * v_target_ref
-        U = U_ * u_ref
-        Y = Y_ * u_ref
-        X_cw = zeros(6,N)
-        for k = 1:N
-            X_cw[:,k] = full_to_reduced_state(X[:,k])
-        end
+        T, X, U, Y, X_cw = process_results(X_, U_, Y_, ν, cost_history, optimality_criterion, filename, iter, parameters)
     end
 
+    # Define figure
     plot_X = 3
     if parameters["complete_results"]
         plot_Y = 3
     else
         plot_Y = 2
     end
-    fig = figure(figsize=(3*plot_X,3*plot_Y))
+    fig = PyPlot.figure(figsize=(3*plot_X,3*plot_Y))
+
     PyPlot.subplot(plot_Y, plot_X, 1)
     if parameters["linearity"]
         PyPlot.plot(T, X[1,:], color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$x_1$ ego")
@@ -86,17 +57,14 @@ function save_results_pyplot(X_, U_, Y_, ν, cost_history, optimality_criterion,
     PyPlot.xlabel(L"Time in $s$")
     PyPlot.ylabel(L"Controls in $N$")
     PyPlot.yscale("linear")
-    # yscale("log")
     PyPlot.legend()
 
     PyPlot.subplot(plot_Y, plot_X, 4)
     PyPlot.plot([i for i=1:iter], cost_history[1:iter], color="cornflowerblue", linewidth=1.0, linestyle="-", label=L"$cost$")
     PyPlot.title("Cost")
     PyPlot.xlabel("L1 Solver Iterations")
-    # ylabel("")
     PyPlot.yscale("linear")
     PyPlot.xlim(1,iter)
-    # legend()
 
     PyPlot.subplot(plot_Y, plot_X, 5)
     PyPlot.plot([i for i=1:iter], optimality_criterion[1:iter], color="forestgreen", linewidth=1.0, linestyle="-", label=L"$||\nabla_{X,U} L||_{\infty}$")
@@ -104,7 +72,6 @@ function save_results_pyplot(X_, U_, Y_, ν, cost_history, optimality_criterion,
     PyPlot.xlabel("L1 Solver Iterations")
     PyPlot.ylabel(L"$||U - Y||_{2} / dim(U)$")
     PyPlot.xlim(1,iter)
-    # legend()
     PyPlot.yscale("log")
 
     if parameters["complete_results"]
@@ -114,7 +81,6 @@ function save_results_pyplot(X_, U_, Y_, ν, cost_history, optimality_criterion,
         PyPlot.step(T[1:end-1], parameters["ρ"]*(U[3,:] - Y[3,:]), color="forestgreen", linewidth=1.0, linestyle="-", label=L"$y_3$")
         PyPlot.title(L"$\rho (U - Y)$")
         PyPlot.xlabel(L"Iterations")
-        # ylabel(L" ")
         PyPlot.legend()
 
         PyPlot.subplot(plot_Y, plot_X, 7)
@@ -123,12 +89,10 @@ function save_results_pyplot(X_, U_, Y_, ν, cost_history, optimality_criterion,
         PyPlot.step(T[1:end-1], ν[3,:], color="forestgreen", linewidth=1.0, linestyle="-", label=L"$ν_3$")
         PyPlot.title(L"\nu")
         PyPlot.xlabel(L"Time in $s$")
-        # ylabel(L" ")
         PyPlot.legend()
     end
     PyPlot.tight_layout()
     PyPlot.savefig("result/" * filename*"."*parameters["plot_format"], format=parameters["plot_format"], dpi=1000)
-    PyPlot.savefig("result/" * filename*".png", format="png", dpi=300)
     PyPlot.close()
     JLD.save("result/control/" * filename*".jld", "U", U, "x0", X[:,1])
     return

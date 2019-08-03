@@ -90,3 +90,48 @@ function initial_drift(parameters)
     x0_full = X_history[:,N_drift]
     return x0_full
 end
+
+function process_results(X_, U_, Y_, ν, cost_history, optimality_criterion,
+    filename, iter, parameters)
+    # Process the results of the solver to return data easy to plot.
+    num_iter = parameters["num_iter"]
+    N = parameters["N"]
+    n = parameters["n"]
+    Δt_rescaled = parameters["Δt"] * parameters["t_ref"]
+
+    t_ref = parameters["t_ref"]
+    T = [Δt_rescaled * i for i=0:N-1]
+
+    # Rescaling
+    if parameters["linearity"]
+        l_ref = parameters["l_ref"]
+        v_ref = parameters["v_ref"]
+        u_ref = parameters["u_ref"]
+        X = zero(X_)
+        X[1:3,:] = X_[1:3,:] * l_ref
+        X[4:6,:] = X_[4:6,:] * v_ref
+        U = U_ * u_ref
+        Y = Y_ * u_ref
+        return T, X, U, Y
+    elseif !parameters["linearity"]
+        l_ego_ref = parameters["l_ego_ref"]
+        l_target_ref = parameters["l_target_ref"]
+        v_ego_ref = parameters["v_ego_ref"]
+        v_target_ref = parameters["v_target_ref"]
+        a_ego_ref = parameters["a_ego_ref"]
+        a_target_ref = parameters["a_target_ref"]
+        u_ref = parameters["u_ref"]
+        X = zero(X_)
+        X[1:3,:] = X_[1:3,:] * l_ego_ref
+        X[4:6,:] = X_[4:6,:] * l_target_ref
+        X[7:9,:] = X_[7:9,:] * v_ego_ref
+        X[10:12,:] = X_[10:12,:] * v_target_ref
+        U = U_ * u_ref
+        Y = Y_ * u_ref
+        X_cw = zeros(6,N)
+        for k = 1:N
+            X_cw[:,k] = full_to_reduced_state(X[:,k])
+        end
+        return T, X, U, Y, X_cw
+    end
+end
