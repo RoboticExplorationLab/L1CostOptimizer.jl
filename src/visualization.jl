@@ -92,6 +92,9 @@ function save_results_image(X_, U_, Y_, ν, cost_history, optimality_criterion, 
         PyPlot.legend()
     end
     PyPlot.tight_layout()
+    if parameters["show_result"]
+        return fig
+    end
     PyPlot.savefig("visualization/image_plot/" * filename*"."*parameters["plot_format"], format=parameters["plot_format"], dpi=1000)
     PyPlot.close()
     JLD.save("result/control/" * filename*".jld", "U", U, "x0", X[:,1])

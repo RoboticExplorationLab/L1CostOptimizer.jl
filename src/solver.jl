@@ -101,7 +101,9 @@ function l1_solver(parameters)
             # Costs computations
             cost_history[i] = cost_function(X, U, parameters)
             #Constraint violation
-            println("opt. crit.,  cost = ", [optimality_criterion[i], cost_history[i]])
+            if parameters["verbose"]
+                println("opt. crit.,  cost = ", [optimality_criterion[i], cost_history[i]])
+            end
             if parameters["stage_plot"] && (i-1)%parameters["stage_plot_freq"] == 0
                 filename = "inter_" * "rho_" * string(parameters["ρ"]) * "_iter_"
                 filename *= string(parameters["num_iter"]) * "_Qf_"

@@ -52,7 +52,9 @@ function define_lin_constrained_parameters()
                   "complete_results" => false, # saving more plots
                   "stage_plot" => false, # saving stage plots
                   "stage_plot_freq" => 10, # stage plot frequency
-                  "plot_format" => "eps", # saving fromat
+                  "plot_format" => "eps", # saving format
+                  "show_result" => false, # show result in notebook
+                  "verbose" => true, # show the optimaility criterion and cost during solve.
                   "timing" => false, # timing mode
                   "linearity" => true, # using linear dynamics
                   "u_min" => -5e-3, # lower bound on u
@@ -130,6 +132,8 @@ function define_lin_unconstrained_parameters()
                   "stage_plot" => false, # saving stage plots
                   "stage_plot_freq" => 10, # stage plot frequency
                   "plot_format" => "eps", # saving format
+                  "show_result" => false, # show result in notebook
+                  "verbose" => true, # show the optimaility criterion and cost during solve.
                   "timing" => false, # timing mode
                   "linearity" => true, # using linear dynamics
                   "u_min" => -5e-3, # lower bound on u
@@ -214,6 +218,8 @@ function define_non_lin_unconstrained_parameters()
                   "stage_plot" => false, # saving stage plots
                   "stage_plot_freq" => 10, # stage plot frequency
                   "plot_format" => "eps", # saving format
+                  "show_result" => false, # show result in notebook
+                  "verbose" => true, # show the optimaility criterion and cost during solve.
                   "timing" => false, # timing mode
                   "linearity" => false, # using non linear dynamics
                   "u_min" => -5e-3, # lower bound on u
@@ -304,6 +310,8 @@ function define_non_lin_constrained_parameters()
                   "stage_plot" => false, # saving stage plots
                   "stage_plot_freq" => 10, # stage plot frequency
                   "plot_format" => "eps", # saving format
+                  "show_result" => false, # show result in notebook
+                  "verbose" => true, # show the optimaility criterion and cost during solve.
                   "timing" => false, # timing mode
                   "linearity" => false, # using non linear dynamics
                   "u_min" => -5e-3, # lower bound on u
