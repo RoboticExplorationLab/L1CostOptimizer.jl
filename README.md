@@ -10,5 +10,10 @@ The results presented in the paper can be easily replicated by running the dedic
 
 ![alt text](https://raw.githubusercontent.com/simon-lc/L1CostOptimizer.jl/master/readme/constrained_nonlinear_dynamics.png)
 
+## 3D visualization of the spacecrafts trajectories
+The results presented in the paper can be easily replicated by running the dedicated notebooks. For instance, executing `L1CostOptimizer_nonlinear_dynamics_control_constraints.ipynb` will produce solutions for the spacecraft rendezvous problem with nonlinear dynamics and control constraints.
+
+![alt text](https://raw.githubusercontent.com/simon-lc/L1CostOptimizer.jl/master/readme/satellite_rendezvous.png)
+
 
 
