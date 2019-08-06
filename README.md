@@ -1,5 +1,5 @@
 # L1CostOptimizer
-FAST SOLUTION OF OPTIMAL CONTROL PROBLEMS WITH L1 COST
+Fast Solution of Optimal Control Problems With L1 Cost
 
 This repository contains the solver described in the paper: ###LINK TO PAPER. Its provides all the details regarding the parameters used for the experiments presented in the paper. Notebooks are also provided to allow for quick replication of the paper's results.
 
