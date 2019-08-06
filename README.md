@@ -1,7 +1,7 @@
 # L1CostOptimizer
 Fast Solution of Optimal Control Problems With L1 Cost
 
-This repository contains the solver described in the paper: **Fast Solution of Optimal Control Problems With L1 Cost**. It provides all the details regarding the parameters used for the experiments presented in the paper. Notebooks are also provided to allow for quick replication of the paper's results.
+This repository contains the solver described in the paper: [Fast Solution of Optimal Control Problems With L1 Cost](https://rexlab.stanford.edu/papers/l1-cost-optimizer.pdf). It provides all the details regarding the parameters used for the experiments presented in the paper. Notebooks are also provided to allow for quick replication of the paper's results.
 
 This solver is designed for optimal control problem with L1-norm control cost. It is written in Julia and relies on the general trajectory optimization solver [ALTRO (Augmented Lagrangian TRajectory Optimizer)](https://rexlab.stanford.edu/papers/altro-iros.pdf). 
 
