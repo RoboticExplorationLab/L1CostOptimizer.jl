@@ -33,6 +33,7 @@ function define_animation_parameters()
 end
 
 function spacecraft_transformation(x, parameters)
+    # Compute the rotations and translations of the spacecrafts.
     length_scale = parameters["length_scale"]
     delta_scale = parameters["delta_scale"]
     r_target = x[4:6]
@@ -56,8 +57,8 @@ function spacecraft_transformation(x, parameters)
 end
 
 function load_data(parameters)
-    filename = parameters["filename"]
     # Load data
+    filename = parameters["filename"]
     T = load("animation/trajectory/" * filename * ".jld", "T")
     X = load("animation/trajectory/" * filename * ".jld", "X")
     Y = load("animation/trajectory/" * filename * ".jld", "Y")
@@ -69,6 +70,7 @@ function load_data(parameters)
 end
 
 function visualizer(parameters)
+    # Visualizes the trajectories obtained using the L1 cost optimizer using Meshcat.
     length_scale = parameters["length_scale"]
     cubesat_dim_x = parameters["cubesat_dim_x"]
     cubesat_dim_y = parameters["cubesat_dim_y"]
@@ -167,9 +169,8 @@ end
 # visualizer(parameters)
 
 # Saving as a video.
-# MeshCat.convert_frames_to_video(
-    # "/home/simon/research/l1_optimization/L1CostOptimizer.jl/animation/meshcat_1565048632080.tar", overwrite=true)
-
+MeshCat.convert_frames_to_video(
+    "/home/simon/research/l1_optimization/L1CostOptimizer.jl/animation/meshcat_1565050100592.tar", overwrite=true)
 
 # To convert the still frames into a video, extract the `.tar` file and run:
 # ffmpeg -r 60 -i %07d.png \
