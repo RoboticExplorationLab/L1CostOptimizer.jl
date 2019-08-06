@@ -39,14 +39,14 @@ stopping_criterion = 5e-6
 non_lin_cons_example(ρ, stopping_criterion)
 #206
 
-# # Running Tests
-# test_linear_dynamics_scaling()
-# test_non_linear_dynamics_scaling()
-# test_dynamics_consistency()
+# Running Tests
+test_linear_dynamics_scaling()
+test_non_linear_dynamics_scaling()
+test_dynamics_consistency()
 
-# # Running visualization
-# parameters = define_animation_parameters()
-# # parameters["filename"] = "unconstrained_nonlinear_dynamics"
-# parameters["filename"] = "constrained_nonlinear_dynamics"
-# # parameters["filename"] = "quadratic_unconstrained_nonlinear_dynamics"
-# visualizer(parameters)
+# Running visualization
+parameters = define_animation_parameters()
+# parameters["filename"] = "unconstrained_nonlinear_dynamics"
+parameters["filename"] = "constrained_nonlinear_dynamics"
+# parameters["filename"] = "quadratic_unconstrained_nonlinear_dynamics"
+visualizer(parameters)

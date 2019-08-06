@@ -98,7 +98,7 @@ function save_results_image(X_, U_, Y_, ν, cost_history, optimality_criterion,
     if parameters["show_result"]
         return fig
     end
-    PyPlot.savefig("visualization/image_plot/" * filename*"."*parameters["plot_format"], format=parameters["plot_format"], dpi=1000)
+    PyPlot.savefig("visualization/image_plot/" * filename*"."*parameters["plot_format"], format=parameters["plot_format"], dpi=300)
     PyPlot.close()
     return
 end
