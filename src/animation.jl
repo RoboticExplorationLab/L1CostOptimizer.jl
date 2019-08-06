@@ -168,13 +168,6 @@ end
 # parameters["filename"] = "constrained_nonlinear_dynamics"
 # visualizer(parameters)
 
-# Saving as a video.
-MeshCat.convert_frames_to_video(
-    "/home/simon/research/l1_optimization/L1CostOptimizer.jl/animation/meshcat_1565050100592.tar", overwrite=true)
-
-# To convert the still frames into a video, extract the `.tar` file and run:
-# ffmpeg -r 60 -i %07d.png \
-# 	 -vcodec libx264 \
-# 	 -preset slow \
-# 	 -crf 18 \
-# 	 output.mp4
+# # Saving as a video.
+# MeshCat.convert_frames_to_video(
+#     "/home/simon/research/l1_optimization/L1CostOptimizer.jl/animation/meshcat_1565050100592.tar", overwrite=true)

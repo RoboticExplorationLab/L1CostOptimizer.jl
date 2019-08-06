@@ -5,10 +5,10 @@ This repository contains the solver described in the paper: ###LINK TO PAPER. It
 
 This solver is designed for optimal control problem with L1-norm control cost. It is written in Julia and relies on the general trajectory optimization solver [ALTRO (Augmented Lagrangian TRajectory Optimizer)](https://rexlab.stanford.edu/papers/altro-iros.pdf). 
 
+## Replicating the results
+The results presented in the paper can be easily replicated by running the dedicated notebooks. For instance, executing `L1CostOptimizer_nonlinear_dynamics_control_constraints.ipynb` will produce solutions for the spacecraft rendezvous problem with nonlinear dynamics and control constraints.
 
-
-
-
+![alt text](https://raw.githubusercontent.com/simon-lc/L1CostOptimizer.jl/master/readme/constrained_nonlinear_dynamics.png)
 
 
 
