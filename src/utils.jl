@@ -135,3 +135,18 @@ function process_results(X_, U_, Y_, ν, cost_history, optimality_criterion,
         return T, X, U, Y, X_cw
     end
 end
+
+function save_results_file(X_, U_, Y_, ν, cost_history, optimality_criterion,
+    filename, iter, parameters)
+    # Saves files of the state, control trajectories as well as cost, optimality
+    # across iterations.
+    if parameters["linearity"]
+        T, X, U, Y = process_results(X_, U_, Y_, ν, cost_history,
+            optimality_criterion, filename, iter, parameters)
+    elseif !parameters["linearity"]
+        T, X, U, Y, X_cw = process_results(X_, U_, Y_, ν, cost_history,
+            optimality_criterion, filename, iter, parameters)
+    end
+    JLD.save("animation/trajectory/" * filename * ".jld",
+        "T", T, "X", X, "U", U, "Y", Y)
+end

@@ -23,6 +23,8 @@ function lin_cons_example(ρ, stopping_criterion)
         filename, iter, lin_cons_parameters)
     save_results_image(X, U, Y, ν, cost_history, optimality_criterion,
         filename, iter, lin_cons_parameters)
+    save_results_file(X, U, Y, ν, cost_history, optimality_criterion,
+        filename, iter, lin_cons_parameters)
 end
 
 function lin_uncons_example(ρ, stopping_criterion)
@@ -50,6 +52,8 @@ function lin_uncons_example(ρ, stopping_criterion)
         filename, iter, lin_uncons_parameters)
     save_results_image(X, U, Y, ν, cost_history, optimality_criterion,
         filename, iter, lin_uncons_parameters)
+    save_results_file(X, U, Y, ν, cost_history, optimality_criterion,
+        filename, iter, lin_uncons_parameters)
 end
 
 function non_lin_uncons_example(ρ, stopping_criterion)
@@ -66,7 +70,6 @@ function non_lin_uncons_example(ρ, stopping_criterion)
     # we set the orbit radius of the cw model.
     non_lin_uncons_parameters["orbit_radius"] = norm(x0_full[4:6])
     non_lin_uncons_parameters["x0"] = x0_full
-    println("x0_full = ", x0_full)
     # Scale the parameters of the linear model
     non_lin_uncons_parameters = scale_non_lin_parameters(non_lin_uncons_parameters)
 
@@ -76,6 +79,8 @@ function non_lin_uncons_example(ρ, stopping_criterion)
     save_results_latex(X, U, Y, ν, cost_history, optimality_criterion,
         filename, iter, non_lin_uncons_parameters)
     save_results_image(X, U, Y, ν, cost_history, optimality_criterion,
+        filename, iter, non_lin_uncons_parameters)
+    save_results_file(X, U, Y, ν, cost_history, optimality_criterion,
         filename, iter, non_lin_uncons_parameters)
 end
 
@@ -113,5 +118,7 @@ function non_lin_cons_example(ρ, stopping_criterion)
     save_results_latex(X, U, Y, ν, cost_history, optimality_criterion,
         filename, iter, non_lin_cons_parameters)
     save_results_image(X, U, Y, ν, cost_history, optimality_criterion,
+        filename, iter, non_lin_cons_parameters)
+    save_results_file(X, U, Y, ν, cost_history, optimality_criterion,
         filename, iter, non_lin_cons_parameters)
 end

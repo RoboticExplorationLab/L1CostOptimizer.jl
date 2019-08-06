@@ -1,0 +1,10 @@
+\begin{tikzpicture}[]
+\begin{axis}[legend pos = {north east}, ylabel = {Cost}, title = {Convergence}, xlabel = {L1 Solver Iterations}]\addplot+ [no marks, cyan, very thick]coordinates {
+};
+\addlegendentry{Cost}
+\addplot+ [no marks, orange, very thick]coordinates {
+};
+\addlegendentry{Opt. Crit.}
+\end{axis}
+
+\end{tikzpicture}
