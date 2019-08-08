@@ -212,10 +212,11 @@ function pyramid_neg_placement(u, u_max, cubesat_dims, max_lengths)
     return pyramid_shift, pyramid_rot
 end
 
-parameters = define_animation_parameters()
-parameters["filename"] = "quadratic_unconstrained_nonlinear_dynamics"
+# parameters = define_animation_parameters()
+# parameters["filename"] = "quadratic_unconstrained_nonlinear_dynamics"
 # parameters["filename"] = "constrained_nonlinear_dynamics"
-visualizer(parameters)
+# visualizer(parameters)
+
 # # Saving as a video.
-MeshCat.convert_frames_to_video(
-    "/home/simon/research/l1_optimization/L1CostOptimizer.jl/animation/meshcat_1565253223544.tar", overwrite=true)
+# MeshCat.convert_frames_to_video(
+#     "/home/simon/research/l1_optimization/L1CostOptimizer.jl/animation/meshcat_1565253223544.tar", overwrite=true)

@@ -108,9 +108,7 @@ function l1_solver(parameters)
                 filename = "inter_" * "rho_" * string(parameters["ρ"]) * "_iter_"
                 filename *= string(parameters["num_iter"]) * "_Qf_"
                 filename *= string(parameters["Qf"][1,1]) * "_stage_" * string(i)
-                save_results(X, U, Y, ν, cost_history, optimality_criterion,
-                    filename, num_iter, parameters)
-                save_results_pyplot(X, U, Y, ν, cost_history, optimality_criterion,
+                save_results_image(X, U, Y, ν, cost_history, optimality_criterion,
                     filename, num_iter, parameters)
             end
         end

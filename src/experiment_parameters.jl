@@ -50,8 +50,8 @@ function define_lin_constrained_parameters()
                   "using_constraints" => true, # using constraints on control
                   "using_final_constraints" => true, # using constraints on final state
                   "complete_results" => false, # saving more plots
-                  "stage_plot" => false, # saving stage plots
-                  "stage_plot_freq" => 10, # stage plot frequency
+                  "stage_plot" => true, # saving stage plots
+                  "stage_plot_freq" => 1, # stage plot frequency
                   "plot_format" => "png", # saving format
                   "show_result" => false, # show result in notebook
                   "verbose" => true, # show the optimaility criterion and cost during solve.
@@ -129,8 +129,8 @@ function define_lin_unconstrained_parameters()
                   "using_constraints" => false, # using constraints on control
                   "using_final_constraints" => false, # using constraints on final state /!\ cannot be enforced using ILQR
                   "complete_results" => false, # saving more plots
-                  "stage_plot" => false, # saving stage plots
-                  "stage_plot_freq" => 10, # stage plot frequency
+                  "stage_plot" => true, # saving stage plots
+                  "stage_plot_freq" => 1, # stage plot frequency
                   "plot_format" => "png", # saving format
                   "show_result" => false, # show result in notebook
                   "verbose" => true, # show the optimaility criterion and cost during solve.
@@ -215,8 +215,8 @@ function define_non_lin_unconstrained_parameters()
                   "using_constraints" => false, # using constraints on control
                   "using_final_constraints" => false, # using constraints on final state
                   "complete_results" => false, # saving more plots
-                  "stage_plot" => false, # saving stage plots
-                  "stage_plot_freq" => 10, # stage plot frequency
+                  "stage_plot" => true, # saving stage plots
+                  "stage_plot_freq" => 1, # stage plot frequency
                   "plot_format" => "png", # saving format
                   "show_result" => false, # show result in notebook
                   "verbose" => true, # show the optimaility criterion and cost during solve.
@@ -307,8 +307,8 @@ function define_non_lin_constrained_parameters()
                   "using_constraints" => true, # using constraints on control
                   "using_final_constraints" => false, # using constraints on final state
                   "complete_results" => false, # saving more plots
-                  "stage_plot" => false, # saving stage plots
-                  "stage_plot_freq" => 10, # stage plot frequency
+                  "stage_plot" => true, # saving stage plots
+                  "stage_plot_freq" => 1, # stage plot frequency
                   "plot_format" => "png", # saving format
                   "show_result" => false, # show result in notebook
                   "verbose" => true, # show the optimaility criterion and cost during solve.
