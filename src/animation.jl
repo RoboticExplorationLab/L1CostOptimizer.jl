@@ -218,4 +218,4 @@ parameters["filename"] = "quadratic_unconstrained_nonlinear_dynamics"
 visualizer(parameters)
 # # Saving as a video.
 MeshCat.convert_frames_to_video(
-    "/home/simon/research/l1_optimization/L1CostOptimizer.jl/animation/meshcat_1565250928157.tar", overwrite=true)
+    "/home/simon/research/l1_optimization/L1CostOptimizer.jl/animation/meshcat_1565253223544.tar", overwrite=true)
